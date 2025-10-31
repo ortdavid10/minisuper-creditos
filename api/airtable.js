@@ -18,14 +18,13 @@ export default async function handler(req, res) {
       result = records.map(r => ({ id: r.id, ...r.fields }));
 
     } else if (action === 'create') {
-      // CORREGIDO: Airtable espera [{ fields: data }]
-      const record = await base(table).create([{ fields: data }]);
-      result = { id: record[0].id, ...record[0].fields };
+      const created = await base(table).create([{ fields: data }]);
+      result = { id: created[0].id, ...created[0].fields };
 
     } else if (action === 'update') {
       if (!recordId) throw new Error('Falta recordId');
-      const record = await base(table).update([{ id: recordId, fields: data }]);
-      result = { id: record[0].id, ...record[0].fields };
+      const updated = await base(table).update([{ id: recordId, fields: data }]);
+      result = { id: updated[0].id, ...updated[0].fields };
 
     } else if (action === 'delete') {
       if (!recordId) throw new Error('Falta recordId');
@@ -38,10 +37,7 @@ export default async function handler(req, res) {
 
     res.status(200).json(result);
   } catch (error) {
-    console.error('Error en Airtable:', error.message);
-    res.status(500).json({ 
-      error: 'Error en Airtable', 
-      message: error.message 
-    });
+    console.error('Error:', error.message);
+    res.status(500).json({ error: 'Error en Airtable', message: error.message });
   }
 }
