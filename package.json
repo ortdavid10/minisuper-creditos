@@ -1,8 +1,9 @@
 {
-  "name": "creditoskds",
+  "name": "creditoskds-projects",
   "version": "1.0.0",
   "type": "module",
+  "private": true,
   "dependencies": {
-    "airtable": Rangers"^0.12.2"
+    "airtable": "^0.12.2"
   }
 }
