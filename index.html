@@ -226,7 +226,11 @@
             const pass = document.getElementById('ownerPass').value.trim();
             const tienda = tiendas.find(t => t.User === user && t.Pass === pass);
             if (tienda) {
-                currentOwner = tienda;
+                currentOwner = {
+                    id: tienda.id,
+                    Nombre: tienda.Nombre,
+                    Lugar: tienda.Lugar
+                };
                 show('ownerPanel');
                 document.getElementById('tiendaNameDisplay').innerText = tienda.Nombre;
                 document.getElementById('tiendaLocation').innerText = tienda.Lugar;
@@ -255,12 +259,12 @@
             const res = await apiCall('Clientes', 'create', {
                 Nombre: nombre,
                 Cedula: cedula,
-                Tienda: [currentOwner.id],
+                Tienda: [currentOwner.id],  // CORREGIDO: array con ID del registro
                 "Fecha de registro": new Date().toISOString(),
                 Deudas: "[]"
             });
 
-            if (res.error) return; // ya mostró el alert
+            if (res.error) return;
 
             clientes.push({ ...res, deudas: [] });
             document.getElementById('clienteNombre').value = '';
@@ -337,4 +341,3 @@
     </script>
 </body>
 </html>
-
