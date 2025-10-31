@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniSuper Créditos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- PANTALLA INICIAL -->
+        <div id="loginScreen" class="bg-white rounded-xl shadow-md p-8 fade-in">
+            <div class="text-center mb-8">
+                <i class="fas fa-store-alt text-6xl text-indigo-500 mb-4"></i>
+                <h2 class="text-2xl font-semibold text-gray-800">Selecciona tu rol</h2>
+            </div>
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+                <button onclick="showOwnerLogin()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg flex items-center gap-2">
+                    <i class="fas fa-user-tie"></i> Dueño de Negocio
+                </button>
+                <button onclick="showAdminLogin()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-6 rounded-lg flex items-center gap-2">
+                    <i class="fas fa-user-shield"></i> Administrador
+                </button>
+            </div>
+        </div>
+
+        <!-- LOGIN ADMIN -->
+        <div id="adminLogin" class="hidden bg-white rounded-xl shadow-md p-8 fade-in">
+            <button onclick="backToMain()" class="mb-4 text-gray-600 hover:text-gray-800">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Acceso Administrador</h2>
+            <input type="text" id="adminUser" placeholder="Usuario" class="w-full p-3 border rounded-lg mb-3">
+            <input type="password" id="adminPass" placeholder="Contraseña" class="w-full p-3 border rounded-lg mb-3">
+            <p id="adminError" class="text-red-500 text-sm mb-3"></p>
+            <button onclick="loginAdmin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg font-medium">Iniciar Sesión</button>
+        </div>
+
+        <!-- PANEL ADMIN -->
+        <div id="adminPanel" class="hidden bg-white rounded-xl shadow-md p-6 fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Panel Administrador</h2>
+                <button onclick="logout()" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+
+            <div class="bg-indigo-50 p-5 rounded-lg mb-6">
+                <h3 class="font-semibold text-indigo-800 mb-3">Agregar Nueva Tienda</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input type="text" id="tiendaNombre" placeholder="Nombre de la tienda" class="p-3 border rounded-lg">
+                    <input type="text" id="tiendaLugar" placeholder="Ubicación" class="p-3 border rounded-lg">
+                    <input type="text" id="tiendaUser" placeholder="Usuario del dueño" class="p-3 border rounded-lg">
+                    <input type="password" id="tiendaPass" placeholder="Contraseña del dueño" class="p-3 border rounded-lg">
+                </div>
+                <button onclick="agregarTienda()" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg font-medium">
+                    <i class="fas fa-plus mr-2"></i>Agregar Tienda
+                </button>
+            </div>
+
+            <h3 class="font-semibold text-gray-800 mb-3">Tiendas Registradas</h3>
+            <div id="tiendasList" class="space-y-3"></div>
+        </div>
+
+        <!-- LOGIN DUEÑO -->
+        <div id="ownerLogin" class="hidden bg-white rounded-xl shadow-md p-8 fade-in">
+            <button onclick="backToMain()" class="mb-4 text-gray-600 hover:text-gray-800">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Acceso Dueño</h2>
+            <input type="text" id="ownerUser" placeholder="Usuario" class="w-full p-3 border rounded-lg mb-3">
+            <input type="password" id="ownerPass" placeholder="Contraseña" class="w-full p-3 border rounded-lg mb-3">
+            <p id="ownerError" class="text-red-500 text-sm mb-3"></p>
+            <button onclick="loginOwner()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg font-medium">Iniciar Sesión</button>
+        </div>
+
+        <!-- PANEL DUEÑO -->
+        <div id="ownerPanel" class="hidden bg-white rounded-xl shadow-md p-6 fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Tienda: <span id="tiendaNameDisplay" class="text-indigo-600"></span></h2>
+                    <p id="tiendaLocation" class="text-sm text-gray-600"></p>
+                </div>
+                <button onclick="logout()" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+
+            <div class="mb-6">
+                <input type="text" id="buscador" placeholder="Buscar por nombre o cédula..." class="w-full p-3 border rounded-lg" onkeyup="buscarCliente()">
+                <div id="resultadosBuscador" class="mt-4 space-y-3"></div>
+            </div>
+
+            <div class="bg-indigo-50 p-5 rounded-lg">
+                <h3 class="font-semibold text-indigo-800 mb-3">Agregar Cliente</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input type="text" id="clienteNombre" placeholder="Nombre completo" class="p-3 border rounded-lg">
+                    <input type="text" id="clienteCedula" placeholder="Cédula" class="p-3 border rounded-lg">
+                </div>
+                <button onclick="agregarCliente()" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg font-medium">
+                    <i class="fas fa-plus mr-2"></i>Agregar Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/airtable';
+        const adminCredenciales = { user: "Ortdavid10", pass: "operador2864" };
+        let tiendas = [], clientes = [], currentOwner = null;
+
+        // === NAVEGACIÓN ===
+        function show(panelId) {
+            ['loginScreen', 'adminLogin', 'adminPanel', 'ownerLogin', 'ownerPanel'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(panelId).classList.remove('hidden');
+        }
+        function showAdminLogin() { show('adminLogin'); }
+        function showOwnerLogin() { show('ownerLogin'); }
+        function backToMain() { show('loginScreen'); }
+        function logout() {
+            currentOwner = null;
+            document.querySelectorAll('input').forEach(input => input.value = '');
+            show('loginScreen');
+        }
+
+        // === API CON ALERT DE ERROR ===
+        async function apiCall(table, action, data = {}, recordId = null) {
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ table, action, data, recordId })
+                });
+                const json = await res.json();
+                if (!res.ok || json.error) {
+                    alert('ERROR DE AIRTABLE:\n' + JSON.stringify(json, null, 2));
+                    return { error: true };
+                }
+                return json;
+            } catch (e) {
+                alert('ERROR DE CONEXIÓN:\n' + e.message);
+                return { error: true };
+            }
+        }
+
+        // === ADMIN ===
+        async function loginAdmin() {
+            const user = document.getElementById('adminUser').value.trim();
+            const pass = document.getElementById('adminPass').value;
+            if (user === adminCredenciales.user && pass === adminCredenciales.pass) {
+                show('adminPanel');
+                document.getElementById('adminError').innerText = '';
+                await loadTiendas();
+            } else {
+                document.getElementById('adminError').innerText = 'Usuario o contraseña incorrectos';
+            }
+        }
+
+        async function loadTiendas() {
+            const data = await apiCall('Tiendas', 'list');
+            tiendas = Array.isArray(data) ? data : [];
+            const list = document.getElementById('tiendasList');
+            list.innerHTML = tiendas.length === 0 
+                ? '<p class="text-gray-500 text-center">No hay tiendas registradas</p>' 
+                : '';
+            tiendas.forEach((t, i) => {
+                const div = document.createElement('div');
+                div.className = 'bg-white p-4 rounded-lg shadow-sm border flex justify-between items-center card-hover';
+                div.innerHTML = `
+                    <div>
+                        <h4 class="font-semibold">${t.Nombre}</h4>
+                        <p class="text-sm text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>${t.Lugar}</p>
+                    </div>
+                    <button onclick="eliminarTienda(${i})" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        async function agregarTienda() {
+            const nombre = document.getElementById('tiendaNombre').value.trim();
+            const lugar = document.getElementById('tiendaLugar').value.trim();
+            const user = document.getElementById('tiendaUser').value.trim();
+            const pass = document.getElementById('tiendaPass').value.trim();
+
+            if (!nombre || !lugar || !user || !pass) {
+                alert('Complete todos los campos');
+                return;
+            }
+
+            const res = await apiCall('Tiendas', 'create', { Nombre: nombre, Lugar: lugar, User: user, Pass: pass });
+            if (res.error) return;
+
+            tiendas.push(res);
+            loadTiendas();
+            document.getElementById('tiendaNombre').value = '';
+            document.getElementById('tiendaLugar').value = '';
+            document.getElementById('tiendaUser').value = '';
+            document.getElementById('tiendaPass').value = '';
+            showNotification('Tienda agregada', 'success');
+        }
+
+        async function eliminarTienda(i) {
+            if (confirm('¿Eliminar esta tienda?')) {
+                const id = tiendas[i].id;
+                await apiCall('Tiendas', 'delete', {}, id);
+                tiendas.splice(i, 1);
+                loadTiendas();
+            }
+        }
+
+        // === DUEÑO ===
+        async function loginOwner() {
+            const user = document.getElementById('ownerUser').value.trim();
+            const pass = document.getElementById('ownerPass').value.trim();
+            const tienda = tiendas.find(t => t.User === user && t.Pass === pass);
+            if (tienda) {
+                currentOwner = {
+                    id: tienda.id,
+                    Nombre: tienda.Nombre,
+                    Lugar: tienda.Lugar
+                };
+                show('ownerPanel');
+                document.getElementById('tiendaNameDisplay').innerText = tienda.Nombre;
+                document.getElementById('tiendaLocation').innerText = tienda.Lugar;
+                document.getElementById('ownerError').innerText = '';
+                await loadClientes();
+            } else {
+                document.getElementById('ownerError').innerText = 'Usuario o contraseña incorrectos';
+            }
+        }
+
+        async function loadClientes() {
+            const data = await apiCall('Clientes', 'list');
+            clientes = Array.isArray(data) ? data.map(c => ({
+                ...c,
+                deudas: c.Deudas ? JSON.parse(c.Deudas) : []
+            })) : [];
+            document.getElementById('resultadosBuscador').innerHTML = '';
+        }
+
+        async function agregarCliente() {
+            const nombre = document.getElementById('clienteNombre').value.trim();
+            const cedula = document.getElementById('clienteCedula').value.trim();
+            if (!nombre || !cedula) return alert('Faltan datos');
+            if (clientes.some(c => c.Cedula === cedula)) return alert('Cliente ya existe');
+
+            const res = await apiCall('Clientes', 'create', {
+                Nombre: nombre,
+                Cedula: cedula,
+                Tienda: [currentOwner.id],
+                "Fecha de registro": new Date().toISOString().split('T')[0],
+                Deudas: "[]"
+            });
+
+            if (res.error) return;
+
+            clientes.push({ ...res, deudas: [] });
+            document.getElementById('clienteNombre').value = '';
+            document.getElementById('clienteCedula').value = '';
+            showNotification('Cliente agregado', 'success');
+        }
+
+        function buscarCliente() {
+            const query = document.getElementById('buscador').value.trim().toLowerCase();
+            const cont = document.getElementById('resultadosBuscador');
+            cont.innerHTML = '';
+
+            if (query === '') return;
+
+            const resultados = clientes.filter(c => 
+                c.Nombre.toLowerCase().includes(query) || 
+                c.Cedula.includes(query)
+            );
+
+            if (resultados.length === 0) {
+                cont.innerHTML = '<p class="text-gray-500 text-center">No se encontraron clientes</p>';
+                return;
+            }
+
+            resultados.forEach(c => {
+                const deudasTotales = c.deudas;
+                const nombresDeudas = [...new Set(deudasTotales.map(d => d.tienda))];
+                const debeAqui = deudasTotales.some(d => d.tienda === currentOwner.Nombre);
+
+                let estado = '';
+                if (nombresDeudas.length === 0) {
+                    estado = '<span class="text-green-600 text-sm">• Paz y salvo</span>';
+                } else {
+                    estado = `<span class="text-red-600 text-sm">• Debe en: ${nombresDeudas.join(', ')}</span>`;
+                }
+
+                const div = document.createElement('div');
+                div.className = 'bg-white p-4 rounded-lg shadow-sm border card-hover';
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold">${c.Nombre}</h4>
+                            <p class="text-sm text-gray-500"><i class="fas fa-id-card mr-1"></i>${c.Cedula}</p>
+                            ${estado}
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="agregarDeuda('${c.Cedula}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Debe</button>
+                            <button onclick="pagarDeuda('${c.Cedula}')" class="${debeAqui ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400'} text-white px-3 py-1 rounded text-sm" ${!debeAqui ? 'disabled' : ''}>
+                                ${debeAqui ? 'Pagado' : 'No debe aquí'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                cont.appendChild(div);
+            });
+        }
+
+        async function agregarDeuda(cedula) {
+            const cliente = clientes.find(c => c.Cedula === cedula);
+            
+            if (cliente.deudas.some(d => d.tienda === currentOwner.Nombre)) {
+                alert('Ya marcaste deuda en esta tienda');
+                return;
+            }
+
+            cliente.deudas.push({ 
+                fecha: new Date().toISOString().split('T')[0], 
+                tienda: currentOwner.Nombre 
+            });
+            await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
+            buscarCliente();
+            showNotification('Deuda marcada en esta tienda', 'success');
+        }
+
+        async function pagarDeuda(cedula) {
+            const cliente = clientes.find(c => c.Cedula === cedula);
+            const debeAqui = cliente.deudas.some(d => d.tienda === currentOwner.Nombre);
+            
+            if (!debeAqui) {
+                alert('No hay deuda en esta tienda');
+                return;
+            }
+            
+            if (confirm('¿Marcar como pagado en esta tienda?')) {
+                cliente.deudas = cliente.deudas.filter(d => d.tienda !== currentOwner.Nombre);
+                await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
+                buscarCliente();
+                showNotification('Pago registrado en esta tienda', 'success');
+            }
+        }
+
+        function showNotification(msg, type = 'success') {
+            const div = document.createElement('div');
+            div.className = `fixed bottom-4 right-4 ${type==='success'?'bg-green-500':'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            div.innerText = msg;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+
+        // === INICIO ===
+        async function init() {
+            await loadTiendas();
+            show('loginScreen');
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
