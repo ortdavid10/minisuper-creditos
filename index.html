@@ -255,7 +255,7 @@
             const res = await apiCall('Clientes', 'create', {
                 Nombre: nombre,
                 Cedula: cedula,
-                Tienda: currentOwner.Nombre,
+                Tienda: [currentOwner.id],
                 "Fecha de registro": new Date().toISOString(),
                 Deudas: "[]"
             });
@@ -337,3 +337,4 @@
     </script>
 </body>
 </html>
+
