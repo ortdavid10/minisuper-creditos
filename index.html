@@ -129,7 +129,7 @@
         function backToMain() { show('loginScreen'); }
         function logout() { currentOwner = null; show('loginScreen'); }
 
-        // === API ===
+        // === API CON ERROR DETALLADO ===
         async function apiCall(table, action, data = {}, recordId = null) {
             try {
                 const res = await fetch(API_URL, {
@@ -137,10 +137,15 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ table, action, data, recordId })
                 });
-                return await res.json();
+                const json = await res.json();
+                if (!res.ok || json.error) {
+                    alert('ERROR DE AIRTABLE:\n' + JSON.stringify(json, null, 2));
+                    return { error: json };
+                }
+                return json;
             } catch (e) {
-                showNotification('Error de conexión. Revisa tu internet.', 'error');
-                return { error: 'API no responde' };
+                alert('ERROR DE CONEXIÓN:\n' + e.message);
+                return { error: e.message };
             }
         }
 
@@ -187,31 +192,28 @@
             const pass = document.getElementById('tiendaPass').value.trim();
 
             if (!nombre || !lugar || !user || !pass) {
-                showNotification('Complete todos los campos', 'error');
+                alert('Complete todos los campos');
                 return;
             }
 
             const res = await apiCall('Tiendas', 'create', { Nombre: nombre, Lugar: lugar, User: user, Pass: pass });
-            if (res.id) {
-                tiendas.push(res);
-                loadTiendas();
-                document.getElementById('tiendaNombre').value = '';
-                document.getElementById('tiendaLugar').value = '';
-                document.getElementById('tiendaUser').value = '';
-                document.getElementById('tiendaPass').value = '';
-                showNotification('Tienda agregada con éxito', 'success');
-            } else {
-                showNotification('Error al guardar en Airtable', 'error');
-            }
+            if (res.error) return; // ya mostró el error
+
+            tiendas.push(res);
+            loadTiendas();
+            document.getElementById('tiendaNombre').value = '';
+            document.getElementById('tiendaLugar').value = '';
+            document.getElementById('tiendaUser').value = '';
+            document.getElementById('tiendaPass').value = '';
+            showNotification('Tienda agregada', 'success');
         }
 
         async function eliminarTienda(i) {
-            if (confirm('¿Eliminar esta tienda y todos sus datos?')) {
+            if (confirm('¿Eliminar esta tienda?')) {
                 const id = tiendas[i].id;
                 await apiCall('Tiendas', 'delete', {}, id);
                 tiendas.splice(i, 1);
                 loadTiendas();
-                showNotification('Tienda eliminada', 'success');
             }
         }
 
@@ -244,8 +246,8 @@
         async function agregarCliente() {
             const nombre = document.getElementById('clienteNombre').value.trim();
             const cedula = document.getElementById('clienteCedula').value.trim();
-            if (!nombre || !cedula) return showNotification('Faltan datos', 'error');
-            if (clientes.some(c => c['Cédula'] === cedula)) return showNotification('Cliente ya existe', 'warning');
+            if (!nombre || !cedula) return alert('Faltan datos');
+            if (clientes.some(c => c['Cédula'] === cedula)) return alert('Cliente ya existe');
 
             const res = await apiCall('Clientes', 'create', {
                 Nombre: nombre,
@@ -255,13 +257,13 @@
                 Deudas: "[]"
             });
 
-            if (res.id) {
-                clientes.push({ ...res, deudas: [] });
-                document.getElementById('clienteNombre').value = '';
-                document.getElementById('clienteCedula').value = '';
-                showNotification('Cliente agregado', 'success');
-                buscarCliente();
-            }
+            if (res.error) return; // ya mostró el error
+
+            clientes.push({ ...res, deudas: [] });
+            document.getElementById('clienteNombre').value = '';
+            document.getElementById('clienteCedula').value = '';
+            showNotification('Cliente agregado', 'success');
+            buscarCliente();
         }
 
         function buscarCliente() {
@@ -301,38 +303,35 @@
             const cliente = clientes.find(c => c['Cédula'] === cedula);
             cliente.deudas.push({ fecha: new Date().toISOString().split('T')[0], tienda: currentOwner.Nombre });
             await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
-            showNotification('Deuda registrada', 'success');
             buscarCliente();
         }
 
         async function pagarDeuda(cedula) {
             const cliente = clientes.find(c => c['Cédula'] === cedula);
             const deudasAqui = cliente.deudas.filter(d => d.tienda === currentOwner.Nombre);
-            if (deudasAqui.length === 0) return showNotification('No tiene deudas aquí', 'info');
-            if (confirm('¿Marcar todas las deudas como pagadas?')) {
+            if (deudasAqui.length === 0) return;
+            if (confirm('¿Pagar todas las deudas aquí?')) {
                 cliente.deudas = cliente.deudas.filter(d => d.tienda !== currentOwner.Nombre);
                 await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
-                showNotification('Deudas pagadas', 'success');
                 buscarCliente();
             }
         }
 
         function showNotification(msg, type = 'success') {
-            const colors = { success: 'bg-green-500', error: 'bg-red-500', warning: 'bg-yellow-500', info: 'bg-blue-500' };
             const div = document.createElement('div');
-            div.className = `fixed bottom-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2`;
-            div.innerHTML = `<i class="fas fa-check-circle"></i> ${msg}`;
+            div.className = `fixed bottom-4 right-4 ${type==='success'?'bg-green-500':'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            div.innerText = msg;
             document.body.appendChild(div);
             setTimeout(() => div.remove(), 3000);
         }
 
         // === INICIO ===
         async function init() {
-            await loadTiendas();
+            await loadTiendas(); // Espera a que carguen las tiendas
             show('loginScreen');
         }
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
-
+</html>
 
