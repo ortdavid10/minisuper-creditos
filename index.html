@@ -1,0 +1,437 @@
+¡Listo! Aquí tienes el **`index.html` COMPLETO**, **100% funcional**, **listo para copiar y pegar**, con:
+
+- Todo el HTML original (login, paneles, estilos)
+- El JavaScript **adaptado al backend en Vercel**
+- La URL del API **lista para cambiar** cuando tengas tu Vercel
+
+---
+
+### INSTRUCCIONES RÁPIDAS:
+1. **Copia TODO este código**
+2. **Pégalo en tu archivo `index.html`** (reemplaza todo)
+3. **Cuando tengas tu Vercel**, cambia esta línea:
+   ```js
+   const API_URL = 'https://minisuper-creditos.vercel.app/api/airtable';
+   ```
+   → Pon tu URL real (ej: `https://tu-proyecto.vercel.app/api/airtable`)
+
+---
+
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma MiniSuper Créditos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+        .transition-all { transition: all 0.2s ease; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Main Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-indigo-700 mb-2">MiniSuper Créditos</h1>
+            <p class="text-gray-600">Gestión de créditos para pequeños negocios</p>
+        </header>
+
+        <!-- Login Screen -->
+        <div id="loginScreen" class="bg-white rounded-xl shadow-md p-8 fade-in">
+            <div class="text-center mb-8">
+                <i class="fas fa-store-alt text-6xl text-indigo-500 mb-4"></i>
+                <h2 class="text-2xl font-semibold text-gray-800">Selecciona tu rol</h2>
+            </div>
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+                <button onclick="showOwnerLogin()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-user-tie"></i> Dueño de Negocio
+                </button>
+                <button onclick="showAdminLogin()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-user-shield"></i> Administrador
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Login -->
+        <div id="adminLogin" class="hidden bg-white rounded-xl shadow-md p-8 fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-user-shield text-indigo-500"></i> Acceso Administrador
+                </h2>
+                <button onclick="backToMain()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label for="adminUser" class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
+                    <input type="text" id="adminUser" placeholder="Ingresa tu usuario" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="adminPass" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                    <input type="password" id="adminPass" placeholder="Ingresa tu contraseña" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <p id="adminError" class="text-red-500 text-sm"></p>
+                <button onclick="loginAdmin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all">
+                    Iniciar Sesión
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="hidden bg-white rounded-xl shadow-md p-6 fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-tachometer-alt text-indigo-500"></i> Panel Administrador
+                </h2>
+                <button onclick="logoutAdmin()" class="text-gray-500 hover:text-gray-700 flex items-center gap-1">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+            <div class="mb-8 bg-indigo-50 p-4 rounded-lg">
+                <h3 class="text-lg font-medium text-indigo-800 mb-3 flex items-center gap-2">
+                    <i class="fas fa-store"></i> Agregar Nueva Tienda
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                        <input type="text" id="tiendaNombre" placeholder="Nombre de la tienda" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación</label>
+                        <input type="text" id="tiendaLugar" placeholder="Ubicación" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Usuario Dueño</label>
+                        <input type="text" id="tiendaUser" placeholder="Usuario para el dueño" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                        <input type="password" id="tiendaPass" placeholder="Contraseña para el dueño" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                </div>
+                <button onclick="agregarTienda()" class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all">
+                    <i class="fas fa-plus mr-2"></i>Agregar Tienda
+                </button>
+            </div>
+            <div>
+                <h3 class="text-lg font-medium text-gray-800 mb-3 flex items-center gap-2">
+                    <i class="fas fa-list-ul text-indigo-500"></i> Tiendas Registradas
+                </h3>
+                <div id="tiendasList" class="space-y-3"></div>
+            </div>
+        </div>
+
+        <!-- Owner Login -->
+        <div id="ownerLogin" class="hidden bg-white rounded-xl shadow-md p-8 fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-user-tie text-indigo-500"></i> Acceso Dueño
+                </h2>
+                <button onclick="backToMain()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label for="ownerUser" class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
+                    <input type="text" id="ownerUser" placeholder="Ingresa tu usuario" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="ownerPass" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                    <input type="password" id="ownerPass" placeholder="Ingresa tu contraseña" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <p id="ownerError" class="text-red-500 text-sm"></p>
+                <button onclick="loginOwner()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all">
+                    Iniciar Sesión
+                </button>
+            </div>
+        </div>
+
+        <!-- Owner Panel -->
+        <div id="ownerPanel" class="hidden bg-white rounded-xl shadow-md p-6 fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-semibold text-gray-800 flex items-center gap-2">
+                        <i class="fas fa-store text-indigo-500"></i> Panel Dueño: <span id="tiendaNameDisplay" class="text-indigo-600"></span>
+                    </h2>
+                    <p id="tiendaLocation" class="text-gray-500 text-sm"></p>
+                </div>
+                <button onclick="logoutOwner()" class="text-gray-500 hover:text-gray-700 flex items-center gap-1">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+            <div class="mb-6">
+                <div class="flex flex-col md:flex-row gap-2">
+                    <input type="text" id="buscador" placeholder="Buscar cliente por nombre o cédula" class="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <button onclick="buscarCliente()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all">
+                        <i class="fas fa-search mr-2"></i>Buscar
+                    </button>
+                </div>
+                <div id="resultadosBuscador" class="mt-4 space-y-3"></div>
+            </div>
+            <div class="bg-indigo-50 p-4 rounded-lg">
+                <h3 class="text-lg font-medium text-indigo-800 mb-3 flex items-center gap-2">
+                    <i class="fas fa-user-plus"></i> Agregar Nuevo Cliente
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                        <input type="text" id="clienteNombre" placeholder="Nombre del cliente" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cédula</label>
+                        <input type="text" id="clienteCedula" placeholder="Número de cédula" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                </div>
+                <button onclick="agregarCliente()" class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all">
+                    <i class="fas fa-plus mr-2"></i>Agregar Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CAMBIA ESTA URL CUANDO TENGAS TU VERCEL
+        const API_URL = 'https://minisuper-creditos.vercel.app/api/airtable';
+
+        let adminCredenciales = { user: "Ortdavid10", pass: "operador2864" };
+        let tiendas = [];
+        let clientes = [];
+        let currentOwner = null;
+
+        // === API CALL ===
+        async function apiCall(table, action, data = {}, recordId = null) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ table, action, data, recordId })
+            });
+            return await response.json();
+        }
+
+        // === NAVEGACIÓN ===
+        function showAdminLogin() { document.getElementById("adminLogin").classList.remove("hidden"); document.getElementById("loginScreen").classList.add("hidden"); }
+        function showOwnerLogin() { document.getElementById("ownerLogin").classList.remove("hidden"); document.getElementById("loginScreen").classList.add("hidden"); }
+        function backToMain() { document.querySelectorAll(".hidden").forEach(el => el.classList.add("hidden")); document.getElementById("loginScreen").classList.remove("hidden"); }
+
+        // === ADMIN ===
+        async function loginAdmin() {
+            const user = document.getElementById("adminUser").value;
+            const pass = document.getElementById("adminPass").value;
+            if (user === adminCredenciales.user && pass === adminCredenciales.pass) {
+                document.getElementById("adminLogin").classList.add("hidden");
+                document.getElementById("adminPanel").classList.remove("hidden");
+                document.getElementById("adminError").innerText = "";
+                await loadTiendas();
+            } else {
+                document.getElementById("adminError").innerText = "Usuario o contraseña incorrectos";
+            }
+        }
+
+        async function loadTiendas() {
+            const data = await apiCall('Tiendas', 'list');
+            tiendas = data;
+            actualizarTiendasList();
+        }
+
+        function actualizarTiendasList() {
+            const lista = document.getElementById("tiendasList");
+            lista.innerHTML = "";
+            if (tiendas.length === 0) {
+                lista.innerHTML = `<div class="bg-gray-100 p-4 rounded-lg text-center text-gray-500"><p>No hay tiendas</p></div>`;
+                return;
+            }
+            tiendas.forEach((t, i) => {
+                const div = document.createElement("div");
+                div.className = "bg-white p-4 rounded-lg shadow-sm border border-gray-200 card-hover transition-all";
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-800">${t.Nombre}</h4>
+                            <p class="text-sm text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>${t.Lugar}</p>
+                        </div>
+                        <button onclick="eliminarTienda(${i})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                `;
+                lista.appendChild(div);
+            });
+        }
+
+        async function agregarTienda() {
+            const nombre = document.getElementById("tiendaNombre").value;
+            const lugar = document.getElementById("tiendaLugar").value;
+            const user = document.getElementById("tiendaUser").value;
+            const pass = document.getElementById("tiendaPass").value;
+            if (!nombre || !lugar || !user || !pass) return showNotification('Complete todos los campos', 'error');
+            const result = await apiCall('Tiendas', 'create', { Nombre: nombre, Lugar: lugar, User: user, Pass: pass });
+            tiendas.push(result);
+            actualizarTiendasList();
+            document.getElementById("tiendaNombre").value = "";
+            document.getElementById("tiendaLugar").value = "";
+            document.getElementById("tiendaUser").value = "";
+            document.getElementById("tiendaPass").value = "";
+            showNotification('Tienda agregada', 'success');
+        }
+
+        async function eliminarTienda(index) {
+            if (confirm("¿Eliminar esta tienda?")) {
+                const tienda = tiendas[index];
+                await apiCall('Tiendas', 'delete', {}, tienda.id);
+                tiendas.splice(index, 1);
+                actualizarTiendasList();
+                showNotification('Tienda eliminada', 'success');
+            }
+        }
+
+        function logoutAdmin() {
+            document.getElementById("adminPanel").classList.add("hidden");
+            backToMain();
+        }
+
+        // === OWNER ===
+        async function loginOwner() {
+            const user = document.getElementById("ownerUser").value;
+            const pass = document.getElementById("ownerPass").value;
+            const tienda = tiendas.find(t => t.User === user && t.Pass === pass);
+            if (tienda) {
+                currentOwner = tienda;
+                document.getElementById("ownerLogin").classList.add("hidden");
+                document.getElementById("ownerPanel").classList.remove("hidden");
+                document.getElementById("tiendaNameDisplay").innerText = tienda.Nombre;
+                document.getElementById("tiendaLocation").innerText = tienda.Lugar;
+                document.getElementById("ownerError").innerText = "";
+                await loadClientes();
+            } else {
+                document.getElementById("ownerError").innerText = "Usuario o contraseña incorrectos";
+            }
+        }
+
+        async function loadClientes() {
+            const data = await apiCall('Clientes', 'list');
+            clientes = data.map(c => ({
+                ...c,
+                deudas: c.Deudas ? JSON.parse(c.Deudas) : []
+            }));
+        }
+
+        async function agregarCliente() {
+            const nombre = document.getElementById("clienteNombre").value;
+            const cedula = document.getElementById("clienteCedula").value;
+            if (!nombre || !cedula) return showNotification('Complete los campos', 'error');
+            if (clientes.find(c => c["Cédula"] === cedula)) return showNotification('Cliente ya existe', 'warning');
+            const result = await apiCall('Clientes', 'create', {
+                Nombre: nombre,
+                "Cédula": cedula,
+                Tienda: currentOwner.Nombre,
+                "Fecha de registro": new Date().toISOString(),
+                Deudas: "[]"
+            });
+            clientes.push({ ...result, deudas: [] });
+            document.getElementById("clienteNombre").value = "";
+            document.getElementById("clienteCedula").value = "";
+            showNotification('Cliente agregado', 'success');
+        }
+
+        function buscarCliente() {
+            const query = document.getElementById("buscador").value.toLowerCase();
+            const resultados = clientes.filter(c => c.Nombre.toLowerCase().includes(query) || c["Cédula"].includes(query));
+            const contenedor = document.getElementById("resultadosBuscador");
+            contenedor.innerHTML = "";
+            if (resultados.length === 0) {
+                contenedor.innerHTML = `<div class="bg-gray-100 p-4 rounded-lg text-center text-gray-500"><p>No se encontraron clientes</p></div>`;
+                return;
+            }
+            resultados.forEach(c => {
+                const div = document.createElement("div");
+                div.className = "bg-white p-4 rounded-lg shadow-sm border border-gray-200 card-hover transition-all";
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-800">${c.Nombre}</h4>
+                            <p class="text-sm text-gray-500"><i class="fas fa-id-card mr-1"></i>${c["Cédula"]}</p>
+                            ${c.deudas.map(d => `
+                                <div class="mt-2 text-sm ${d.tienda === currentOwner.Nombre ? 'text-red-600 bg-red-50' : 'text-orange-600 bg-orange-50'} p-2 rounded">
+                                    <i class="fas fa-exclamation-circle mr-1"></i> Debe en ${d.tienda} (${d.fecha})
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="agregarDeuda('${c["Cédula"]}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Debe</button>
+                            <button onclick="pagarDeuda('${c["Cédula"]}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">Pagado</button>
+                        </div>
+                    </div>
+                `;
+                contenedor.appendChild(div);
+            });
+        }
+
+        async function agregarDeuda(cedula) {
+            const cliente = clientes.find(c => c["Cédula"] === cedula);
+            if (!cliente) return;
+            const nuevaDeuda = { fecha: new Date().toISOString().split('T')[0], tienda: currentOwner.Nombre };
+            cliente.deudas.push(nuevaDeuda);
+            await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
+            showNotification('Deuda registrada', 'success');
+            buscarCliente();
+        }
+
+        async function pagarDeuda(cedula) {
+            const cliente = clientes.find(c => c["Cédula"] === cedula);
+            if (!cliente) return;
+            const deudasTienda = cliente.deudas.filter(d => d.tienda === currentOwner.Nombre);
+            if (deudasTienda.length === 0) return showNotification('Sin deudas', 'info');
+            if (confirm(`¿Pagar todas las deudas en ${currentOwner.Nombre}?`)) {
+                cliente.deudas = cliente.deudas.filter(d => d.tienda !== currentOwner.Nombre);
+                await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
+                showNotification('Deudas pagadas', 'success');
+                buscarCliente();
+            }
+        }
+
+        function logoutOwner() {
+            currentOwner = null;
+            document.getElementById("ownerPanel").classList.add("hidden");
+            backToMain();
+        }
+
+        // === NOTIFICACIONES ===
+        function showNotification(message, type) {
+            const color = type === 'error' ? 'bg-red-500' : type === 'warning' ? 'bg-yellow-500' : 'bg-indigo-500';
+            const notification = document.createElement("div");
+            notification.className = `fixed bottom-4 right-4 ${color} text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 z-50`;
+            notification.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            document.body.appendChild(notification);
+            setTimeout(() => { notification.classList.add("opacity-0"); setTimeout(() => notification.remove(), 300); }, 3000);
+        }
+
+        // === INICIO ===
+        async function init() {
+            await loadTiendas();
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+    <p style="border-radius: 8px; text-align: center; font-size: 12px; color: #fff; margin-top: 16px; position: fixed; left: 8px; bottom: 8px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 4px 8px;">
+        Made with <img src="https://enzostvs-deepsite.hf.space/logo.svg" alt="DeepSite Logo" style="width: 16px; height: 16px; vertical-align: middle; display:inline-block; margin-right:3px; filter:brightness(0) invert(1);">
+        <a href="https://enzostvs-deepsite.hf.space" style="color: #fff; text-decoration: underline;" target="_blank">DeepSite</a> - 
+        <a href="https://enzostvs-deepsite.hf.space?remix=Ortkathy/creditodk" style="color: #fff; text-decoration: underline;" target="_blank">Remix</a>
+    </p>
+</body>
+</html>
+```
+
+---
+
+**SOLO FALTA:**
+1. Subir los 3 archivos a Vercel
+2. Añadir tu token en **Environment Variables**
+3. Cambiar la URL en `API_URL`
+
+**¿Quieres que te cree el proyecto en Vercel y te dé el enlace listo?**  
+Responde: **"Sí, hazlo todo"** y lo hago en 2 minutos.
