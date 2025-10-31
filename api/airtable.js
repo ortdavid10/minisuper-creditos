@@ -18,13 +18,14 @@ export default async function handler(req, res) {
       result = records.map(r => ({ id: r.id, ...r.fields }));
 
     } else if (action === 'create') {
+      // CORREGIDO: Airtable espera [{ fields: data }]
       const record = await base(table).create([{ fields: data }]);
       result = { id: record[0].id, ...record[0].fields };
 
     } else if (action === 'update') {
       if (!recordId) throw new Error('Falta recordId');
-      const record = await base(table).update(recordId, { fields: data });
-      result = { id: record.id, ...record.fields };
+      const record = await base(table).update([{ id: recordId, fields: data }]);
+      result = { id: record[0].id, ...record[0].fields };
 
     } else if (action === 'delete') {
       if (!recordId) throw new Error('Falta recordId');
