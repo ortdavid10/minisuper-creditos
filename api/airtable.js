@@ -1,70 +1,43 @@
-// api/airtable.js - DEBUG TOTAL
-const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
-const BASE_ID = 'app40Vfk0hY5I89Bd';
+// api/airtable.js
+import Airtable from 'airtable';
+
+const base = new Airtable({ 
+  apiKey: process.env.AIRTABLE_API_KEY 
+}).base(process.env.AIRTABLE_BASE_ID);
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Solo POST' });
-
-  // DEBUG: Verifica token
-  if (!AIRTABLE_TOKEN) {
-    return res.status(500).json({ error: 'Falta AIRTABLE_TOKEN en Vercel' });
-  }
+  const { table, action, data, recordId } = req.body;
 
   try {
-    const { table, action, data, recordId } = req.body || {};
-    if (!table || !action) return res.status(400).json({ error: 'Faltan table/action' });
-
-    const headers = {
-      'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
-      'Content-Type': 'application/json'
-    };
-
-    let url = `https://api.airtable.com/v0/${BASE_ID}/${table}`;
-    let method = 'GET';
-    let body = null;
+    let result;
 
     if (action === 'list') {
-      // GET
+      const records = await base(table).select({}).all();
+      result = records.map(r => ({ id: r.id, ...r.fields }));
+
     } else if (action === 'create') {
-      method = 'POST';
-      body = JSON.stringify({ fields: data });
+      const record = await base(table).create({ fields: data });
+      result = { id: record.id, ...record.fields };
+
     } else if (action === 'update') {
-      if (!recordId) return res.status(400).json({ error: 'Falta recordId' });
-      url += `/${recordId}`;
-      method = 'PATCH';
-      body = JSON.stringify({ fields: data });
+      if (!recordId) throw new Error('Falta recordId');
+      const record = await base(table).update(recordId, { fields: data });
+      result = { id: record.id, ...record.fields };
+
     } else if (action === 'delete') {
-      if (!recordId) return res.status(400).json({ error: 'Falta recordId' });
-      url += `/${recordId}`;
-      method = 'DELETE';
+      if (!recordId) throw new Error('Falta recordId');
+      await base(table).destroy(recordId);
+      result = { success: true };
+
     } else {
-      return res.status(400).json({ error: 'Acción inválida' });
+      throw new Error('Acción no válida');
     }
 
-    const response = await fetch(url, { method, headers, body });
-    const text = await response.text();
-
-    if (!response.ok) {
-      return res.status(500).json({ 
-        error: 'Airtable rechazó', 
-        status: response.status, 
-        message: text 
-      });
-    }
-
-    const result = JSON.parse(text);
-
-    if (action === 'list') {
-      res.json(result.records?.map(r => ({ id: r.id, ...r.fields })) || []);
-    } else {
-      res.json({ id: result.id, ...result.fields });
-    }
+    res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ error: 'Backend crash: ' + error.message });
+    console.error('Error:', error.message);
+    res.status(500).json({ error: 'Error en Airtable', message: error.message });
   }
 }
