@@ -1,6 +1,11 @@
 {
-  "name": "minisuper-creditos",
+  "name": "creditoskds-projects",
   "version": "1.0.0",
   "type": "module",
-  "dependencies": {}
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "airtable": "^0.12.2"
+  }
 }
