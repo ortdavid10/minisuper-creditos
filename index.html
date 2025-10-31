@@ -290,9 +290,9 @@
             }
 
             resultados.forEach(c => {
-                const registradoAqui = c.Tienda && Array.isArray(c.Tienda) && c.Tienda.includes(currentOwner.id);
                 const deudasTotales = c.deudas;
                 const nombresDeudas = [...new Set(deudasTotales.map(d => d.tienda))];
+                const debeAqui = deudasTotales.some(d => d.tienda === currentOwner.Nombre);
 
                 let estado = '';
                 if (nombresDeudas.length === 0) {
@@ -312,10 +312,10 @@
                             ${estado}
                         </div>
                         <div class="flex gap-2">
-                            ${registradoAqui ? `
-                                <button onclick="agregarDeuda('${c.Cedula}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Debe</button>
-                                <button onclick="pagarDeuda('${c.Cedula}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">Pagado</button>
-                            ` : ''}
+                            <button onclick="agregarDeuda('${c.Cedula}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Debe</button>
+                            <button onclick="pagarDeuda('${c.Cedula}')" class="${debeAqui ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400'} text-white px-3 py-1 rounded text-sm" ${!debeAqui ? 'disabled' : ''}>
+                                ${debeAqui ? 'Pagado' : 'No debe aquí'}
+                            </button>
                         </div>
                     </div>
                 `;
@@ -325,29 +325,35 @@
 
         async function agregarDeuda(cedula) {
             const cliente = clientes.find(c => c.Cedula === cedula);
-            if (!cliente.Tienda.includes(currentOwner.id)) return alert('No puedes marcar deuda de otro cliente');
             
+            if (cliente.deudas.some(d => d.tienda === currentOwner.Nombre)) {
+                alert('Ya marcaste deuda en esta tienda');
+                return;
+            }
+
             cliente.deudas.push({ 
                 fecha: new Date().toISOString().split('T')[0], 
                 tienda: currentOwner.Nombre 
             });
             await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
             buscarCliente();
-            showNotification('Deuda marcada', 'success');
+            showNotification('Deuda marcada en esta tienda', 'success');
         }
 
         async function pagarDeuda(cedula) {
             const cliente = clientes.find(c => c.Cedula === cedula);
-            if (!cliente.Tienda.includes(currentOwner.id)) return alert('No puedes cobrar deuda de otro cliente');
+            const debeAqui = cliente.deudas.some(d => d.tienda === currentOwner.Nombre);
             
-            const deudasAqui = cliente.deudas.filter(d => d.tienda === currentOwner.Nombre);
-            if (deudasAqui.length === 0) return alert('No hay deuda aquí');
+            if (!debeAqui) {
+                alert('No hay deuda en esta tienda');
+                return;
+            }
             
             if (confirm('¿Marcar como pagado en esta tienda?')) {
                 cliente.deudas = cliente.deudas.filter(d => d.tienda !== currentOwner.Nombre);
                 await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
                 buscarCliente();
-                showNotification('Pago registrado', 'success');
+                showNotification('Pago registrado en esta tienda', 'success');
             }
         }
 
