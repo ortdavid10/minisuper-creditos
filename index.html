@@ -259,8 +259,8 @@
             const res = await apiCall('Clientes', 'create', {
                 Nombre: nombre,
                 Cedula: cedula,
-                Tienda: [currentOwner.id],  // CORREGIDO: array con ID del registro
-                "Fecha de registro": new Date().toISOString(),
+                Tienda: [currentOwner.id],
+                "Fecha de registro": new Date().toISOString().split('T')[0],  // SOLO FECHA (YYYY-MM-DD)
                 Deudas: "[]"
             });
 
