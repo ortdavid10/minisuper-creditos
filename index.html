@@ -127,9 +127,14 @@
         function showAdminLogin() { show('adminLogin'); }
         function showOwnerLogin() { show('ownerLogin'); }
         function backToMain() { show('loginScreen'); }
-        function logout() { currentOwner = null; show('loginScreen'); }
+        function logout() {
+            currentOwner = null;
+            // LIMPIAR TODOS LOS CAMPOS AL SALIR
+            document.querySelectorAll('input').forEach(input => input.value = '');
+            show('loginScreen');
+        }
 
-        // === API CON ERROR DETALLADO ===
+        // === API ===
         async function apiCall(table, action, data = {}, recordId = null) {
             try {
                 const res = await fetch(API_URL, {
@@ -139,13 +144,13 @@
                 });
                 const json = await res.json();
                 if (!res.ok || json.error) {
-                    alert('ERROR DE AIRTABLE:\n' + JSON.stringify(json, null, 2));
-                    return { error: json };
+                    showNotification('Error: ' + (json.error || json.message), 'error');
+                    return { error: true };
                 }
                 return json;
             } catch (e) {
-                alert('ERROR DE CONEXIÓN:\n' + e.message);
-                return { error: e.message };
+                showNotification('Sin conexión', 'error');
+                return { error: true };
             }
         }
 
@@ -192,12 +197,12 @@
             const pass = document.getElementById('tiendaPass').value.trim();
 
             if (!nombre || !lugar || !user || !pass) {
-                alert('Complete todos los campos');
+                showNotification('Complete todos los campos', 'error');
                 return;
             }
 
             const res = await apiCall('Tiendas', 'create', { Nombre: nombre, Lugar: lugar, User: user, Pass: pass });
-            if (res.error) return; // ya mostró el error
+            if (res.error) return;
 
             tiendas.push(res);
             loadTiendas();
@@ -246,8 +251,8 @@
         async function agregarCliente() {
             const nombre = document.getElementById('clienteNombre').value.trim();
             const cedula = document.getElementById('clienteCedula').value.trim();
-            if (!nombre || !cedula) return alert('Faltan datos');
-            if (clientes.some(c => c['Cédula'] === cedula)) return alert('Cliente ya existe');
+            if (!nombre || !cedula) return showNotification('Faltan datos', 'error');
+            if (clientes.some(c => c['Cédula'] === cedula)) return showNotification('Cliente ya existe', 'warning');
 
             const res = await apiCall('Clientes', 'create', {
                 Nombre: nombre,
@@ -257,7 +262,7 @@
                 Deudas: "[]"
             });
 
-            if (res.error) return; // ya mostró el error
+            if (res.error) return;
 
             clientes.push({ ...res, deudas: [] });
             document.getElementById('clienteNombre').value = '';
@@ -327,11 +332,10 @@
 
         // === INICIO ===
         async function init() {
-            await loadTiendas(); // Espera a que carguen las tiendas
+            await loadTiendas();
             show('loginScreen');
         }
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
-
