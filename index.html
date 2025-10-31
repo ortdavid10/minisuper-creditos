@@ -247,7 +247,7 @@
                 ...c,
                 deudas: c.Deudas ? JSON.parse(c.Deudas) : []
             })) : [];
-            buscarCliente();
+            buscarCliente(); // Mostrará solo los de esta tienda al inicio
         }
 
         async function agregarCliente() {
@@ -260,7 +260,7 @@
                 Nombre: nombre,
                 Cedula: cedula,
                 Tienda: [currentOwner.id],
-                "Fecha de registro": new Date().toISOString().split('T')[0],  // SOLO FECHA (YYYY-MM-DD)
+                "Fecha de registro": new Date().toISOString().split('T')[0],
                 Deudas: "[]"
             });
 
@@ -275,30 +275,58 @@
 
         function buscarCliente() {
             const query = document.getElementById('buscador').value.toLowerCase();
-            const resultados = clientes.filter(c => 
+            const todosLosClientes = clientes;
+
+            // Filtrar por nombre o cédula
+            const resultados = todosLosClientes.filter(c => 
                 c.Nombre.toLowerCase().includes(query) || 
                 c.Cedula.includes(query)
             );
+
             const cont = document.getElementById('resultadosBuscador');
             cont.innerHTML = '';
             if (resultados.length === 0) {
                 cont.innerHTML = '<p class="text-gray-500 text-center">No se encontraron clientes</p>';
                 return;
             }
+
             resultados.forEach(c => {
-                const tieneDeuda = c.deudas.some(d => d.tienda === currentOwner.Nombre);
+                // ¿Este cliente está registrado en ESTA tienda?
+                const registradoAqui = c.Tienda && c.Tienda.includes(currentOwner.id);
+
+                // ¿Tiene deuda en ESTA tienda?
+                const deudaAqui = c.deudas.some(d => d.tienda === currentOwner.Nombre);
+
+                // ¿Tiene deuda en OTRAS tiendas?
+                const deudasEnOtras = c.deudas.filter(d => d.tienda !== currentOwner.Nombre);
+                const debeEnOtra = deudasEnOtras.length > 0;
+
                 const div = document.createElement('div');
                 div.className = 'bg-white p-4 rounded-lg shadow-sm border card-hover';
+
+                let estado = '';
+                if (!registradoAqui) {
+                    estado = '<span class="text-orange-600 text-sm">• No registrado aquí</span>';
+                } else if (debeEnOtra) {
+                    estado = `<span class="text-red-600 text-sm">• Debe en: ${deudasEnOtras.map(d => d.tienda).join(', ')}</span>`;
+                } else if (deudaAqui) {
+                    estado = '<span class="text-red-600 text-sm">• Tiene deuda aquí</span>';
+                } else {
+                    estado = '<span class="text-green-600 text-sm">• Paz y salvo</span>';
+                }
+
                 div.innerHTML = `
                     <div class="flex justify-between items-center">
                         <div>
                             <h4 class="font-semibold">${c.Nombre}</h4>
                             <p class="text-sm text-gray-500"><i class="fas fa-id-card mr-1"></i>${c.Cedula}</p>
-                            ${tieneDeuda ? '<span class="text-red-600 text-sm">• Tiene deuda aquí</span>' : ''}
+                            ${estado}
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="agregarDeuda('${c.Cedula}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Debe</button>
-                            <button onclick="pagarDeuda('${c.Cedula}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">Pagado</button>
+                            ${registradoAqui ? `
+                                <button onclick="agregarDeuda('${c.Cedula}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Debe</button>
+                                <button onclick="pagarDeuda('${c.Cedula}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">Pagado</button>
+                            ` : ''}
                         </div>
                     </div>
                 `;
