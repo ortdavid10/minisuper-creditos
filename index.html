@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FiaoPro</title>
+    <!-- Tailwind CDN (OK para desarrollo y demo) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>Store</text></svg>">
     <style>
         .hidden { display: none !important; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
@@ -53,7 +55,6 @@
                 </button>
             </div>
 
-            <!-- FORMULARIO AGREGAR TIENDA -->
             <div class="bg-indigo-50 p-5 rounded-lg mb-6">
                 <h3 class="font-semibold text-indigo-800 mb-3">Agregar Nueva Tienda</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -115,6 +116,7 @@
         </div>
     </div>
 
+    <!-- JAVASCRIPT AL FINAL (SIEMPRE) -->
     <script>
         const API_URL = '/api/airtable';
         const adminCredenciales = { user: "Ortdavid10", pass: "operador2864" };
@@ -123,9 +125,11 @@
         // === NAVEGACIÓN ===
         function show(panelId) {
             ['loginScreen', 'adminLogin', 'adminPanel', 'ownerLogin', 'ownerPanel'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
             });
-            document.getElementById(panelId).classList.remove('hidden');
+            const panel = document.getElementById(panelId);
+            if (panel) panel.classList.remove('hidden');
         }
         function showAdminLogin() { show('adminLogin'); }
         function showOwnerLogin() { show('ownerLogin'); }
@@ -348,14 +352,14 @@
             }
 
             resultados.forEach(c => {
-                const debeAqui = c.deudas.some(d => d.tienda === currentOwner.Nombre);
-                const deudasConFecha = c.deudas.map(d => {
-                    const [y, m, d] = d.fecha.split('-');
-                    return `${d.tienda} (${d}/${m}/${y})`;
+                const debeAqui = c.deudas.some(deuda => deuda.tienda === currentOwner.Nombre);
+                const deudasConFecha = c.deudas.map(deuda => {
+                    const [y, m, d] = deuda.fecha.split('-');
+                    return `${deuda.tienda} (${d}/${m}/${y})`;
                 });
                 const estado = deudasConFecha.length === 0 
                     ? '<span class="text-green-600 text-sm">• Paz y salvo</span>'
-                    : `<span class="text-red-600 text-sm">• Debe en: ${deudasConFecha.join(', ')}</span>`;
+                    : `<span class="text-red-600 text-sm">• Debe en: ${deudasConFecha.join(', ')}</span>';
 
                 const div = document.createElement('div');
                 div.className = 'bg-white p-4 rounded-lg shadow-sm border card-hover';
