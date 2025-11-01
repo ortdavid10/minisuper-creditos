@@ -160,14 +160,14 @@
             return Math.ceil(diff / (1000 * 60 * 60 * 24));
         }
 
-        // === ADMIN ===
+        // === ADMIN: FIX DE CARGA ===
         async function loginAdmin() {
             const user = document.getElementById('adminUser').value.trim();
             const pass = document.getElementById('adminPass').value;
             if (user === adminCredenciales.user && pass === adminCredenciales.pass) {
-                show('adminPanel');
                 document.getElementById('adminError').innerText = '';
-                await loadTiendas();
+                show('adminPanel');
+                await loadTiendas(); // ← AHORA SÍ CARGA LAS TIENDAS
             } else {
                 document.getElementById('adminError').innerText = 'Usuario o contraseña incorrectos';
             }
@@ -211,9 +211,7 @@
                     colorClass = 'text-red-600';
                 }
 
-                // NOMBRE DEL DUEÑO
                 const dueñoTexto = t.Dueño ? `<p class="text-sm text-indigo-600 font-medium"><i class="fas fa-user mr-1"></i>${t.Dueño}</p>` : '';
-                // TELÉFONO DEL DUEÑO (con tilde en el campo)
                 const telefonoTexto = t.Teléfono ? `<p class="text-sm text-gray-700"><i class="fas fa-phone mr-1"></i>${t.Teléfono}</p>` : '';
 
                 div.innerHTML = `
@@ -459,7 +457,6 @@
             await loadTiendas();
             show('loginScreen');
 
-            // VERIFICAR SUSCRIPCIÓN CADA 30 SEGUNDOS
             setInterval(() => {
                 if (currentOwner) {
                     const tienda = tiendas.find(t => t.id === currentOwner.id);
@@ -471,7 +468,7 @@
                         }
                     }
                 }
-            }, 30000); // 30 segundos
+            }, 30000);
         }
         document.addEventListener('DOMContentLoaded', init);
     </script>
