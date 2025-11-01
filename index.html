@@ -160,20 +160,20 @@
             return Math.ceil(diff / (1000 * 60 * 60 * 24));
         }
 
-        // === ADMIN: FIX DE CARGA ===
+        // === ADMIN: CARGA CORRECTA ===
         async function loginAdmin() {
             const user = document.getElementById('adminUser').value.trim();
             const pass = document.getElementById('adminPass').value;
             if (user === adminCredenciales.user && pass === adminCredenciales.pass) {
                 document.getElementById('adminError').innerText = '';
                 show('adminPanel');
-                await loadTiendas(); // ← AHORA SÍ CARGA LAS TIENDAS
+                await loadTiendas(); // ← CARGA DESPUÉS DE MOSTRAR EL PANEL
             } else {
                 document.getElementById('adminError').innerText = 'Usuario o contraseña incorrectos';
             }
         }
 
-        // === LOAD TIENDAS CON NOMBRE Y TELÉFONO (CON TILDE) ===
+        // === LOAD TIENDAS CON DUEÑO Y TELÉFONO (CON TILDE) ===
         async function loadTiendas() {
             const data = await apiCall('Tiendas', 'list');
             tiendas = Array.isArray(data) ? data : [];
@@ -226,7 +226,7 @@
                             </p>
                         </div>
                         <div class="flex gap-2 mt-1">
-                            <button onclick="renovarSuscripcion(${i})" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-2 py-1 rounded">
+                            <button onclick="renovarSuscripcion(${i})" class="bg-emerald-500 hover:bg-emerald-600 text-white text text-xs px-2 py-1 rounded">
                                 <i class="fas fa-sync-alt mr-1"></i>Renovar
                             </button>
                             <button onclick="eliminarTienda(${i})" class="text-red-500 hover:text-red-700">
@@ -299,7 +299,7 @@
             }
         }
 
-        // === DUEÑO: BLOQUEO AL LOGIN + EN TIEMPO REAL ===
+        // === DUEÑO ===
         async function loginOwner() {
             const user = document.getElementById('ownerUser').value.trim();
             const pass = document.getElementById('ownerPass').value.trim();
@@ -452,9 +452,8 @@
             setTimeout(() => div.remove(), 3000);
         }
 
-        // === INICIO CON BLOQUEO EN TIEMPO REAL ===
+        // === INICIO SIN CARGA INICIAL ===
         async function init() {
-            await loadTiendas();
             show('loginScreen');
 
             setInterval(() => {
