@@ -272,6 +272,7 @@
             showNotification('Cliente agregado', 'success');
         }
 
+        // === FUNCIÓN CORREGIDA: buscarCliente() ===
         function buscarCliente() {
             const query = document.getElementById('buscador').value.trim().toLowerCase();
             const cont = document.getElementById('resultadosBuscador');
@@ -291,14 +292,19 @@
 
             resultados.forEach(c => {
                 const deudasTotales = c.deudas;
-                const nombresDeudas = [...new Set(deudasTotales.map(d => d.tienda))];
                 const debeAqui = deudasTotales.some(d => d.tienda === currentOwner.Nombre);
 
+                // Convertir fecha: 2025-10-30 → 30/10/2025
+                const deudasConFecha = deudasTotales.map(d => {
+                    const [yyyy, mm, dd] = d.fecha.split('-');
+                    return `${d.tienda} (${dd}/${mm}/${yyyy})`;
+                });
+
                 let estado = '';
-                if (nombresDeudas.length === 0) {
+                if (deudasConFecha.length === 0) {
                     estado = '<span class="text-green-600 text-sm">• Paz y salvo</span>';
                 } else {
-                    estado = `<span class="text-red-600 text-sm">• Debe en: ${nombresDeudas.join(', ')}</span>`;
+                    estado = `<span class="text-red-600 text-sm">• Debe en: ${deudasConFecha.join(', ')}</span>`;
                 }
 
                 const div = document.createElement('div');
