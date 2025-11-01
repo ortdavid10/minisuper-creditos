@@ -6,7 +6,9 @@ const base = new Airtable({
 }).base(process.env.AIRTABLE_BASE_ID);
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Método no permitido' });
+  }
 
   const { table, action, data, recordId } = req.body;
 
@@ -14,7 +16,7 @@ export default async function handler(req, res) {
     let result;
 
     if (action === 'list') {
-      const records = await base(table).select({}).all();
+      const records = await base(table).select({ view: 'Grid view' }).all();
       result = records.map(r => ({ id: r.id, ...r.fields }));
 
     } else if (action === 'create') {
@@ -37,7 +39,7 @@ export default async function handler(req, res) {
 
     res.status(200).json(result);
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error en Airtable:', error.message);
     res.status(500).json({ error: 'Error en Airtable', message: error.message });
   }
 }
