@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniSuper Créditos</title>
+    <title>FiaoPro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -19,7 +19,8 @@
         <div id="loginScreen" class="bg-white rounded-xl shadow-md p-8 fade-in">
             <div class="text-center mb-8">
                 <i class="fas fa-store-alt text-6xl text-indigo-500 mb-4"></i>
-                <h2 class="text-2xl font-semibold text-gray-800">Selecciona tu rol</h2>
+                <h2 class="text-2xl font-semibold text-gray-800">Bienvenido a FiaoPro</h2>
+                <p class="text-sm text-gray-600 mt-2">Controla tus fiados como un pro</p>
             </div>
             <div class="flex flex-col md:flex-row gap-4 justify-center">
                 <button onclick="showOwnerLogin()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg flex items-center gap-2">
@@ -36,7 +37,7 @@
             <button onclick="backToMain()" class="mb-4 text-gray-600 hover:text-gray-800">
                 <i class="fas fa-arrow-left"></i> Volver
             </button>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Acceso Administrador</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">FiaoPro – Acceso Administrador</h2>
             <input type="text" id="adminUser" placeholder="Usuario" class="w-full p-3 border rounded-lg mb-3">
             <input type="password" id="adminPass" placeholder="Contraseña" class="w-full p-3 border rounded-lg mb-3">
             <p id="adminError" class="text-red-500 text-sm mb-3"></p>
@@ -46,13 +47,13 @@
         <!-- PANEL ADMIN -->
         <div id="adminPanel" class="hidden bg-white rounded-xl shadow-md p-6 fade-in">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Panel Administrador</h2>
+                <h2 class="text-2xl font-bold text-gray-800">FiaoPro – Panel Administrador</h2>
                 <button onclick="logout()" class="text-red-500 hover:text-red-700">
                     <i class="fas fa-sign-out-alt"></i> Salir
                 </button>
             </div>
 
-            <!-- FORMULARIO CON DUEÑO Y TELÉFONO -->
+            <!-- FORMULARIO AGREGAR TIENDA -->
             <div class="bg-indigo-50 p-5 rounded-lg mb-6">
                 <h3 class="font-semibold text-indigo-800 mb-3">Agregar Nueva Tienda</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -77,7 +78,7 @@
             <button onclick="backToMain()" class="mb-4 text-gray-600 hover:text-gray-800">
                 <i class="fas fa-arrow-left"></i> Volver
             </button>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Acceso Dueño</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">FiaoPro – Acceso Dueño</h2>
             <input type="text" id="ownerUser" placeholder="Usuario" class="w-full p-3 border rounded-lg mb-3">
             <input type="password" id="ownerPass" placeholder="Contraseña" class="w-full p-3 border rounded-lg mb-3">
             <p id="ownerError" class="text-red-500 text-sm mb-3"></p>
@@ -88,7 +89,7 @@
         <div id="ownerPanel" class="hidden bg-white rounded-xl shadow-md p-6 fade-in">
             <div class="flex justify-between items-center mb-6">
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-800">Tienda: <span id="tiendaNameDisplay" class="text-indigo-600"></span></h2>
+                    <h2 class="text-2xl font-bold text-gray-800">FiaoPro – Tienda: <span id="tiendaNameDisplay" class="text-indigo-600"></span></h2>
                     <p id="tiendaLocation" class="text-sm text-gray-600"></p>
                 </div>
                 <button onclick="logout()" class="text-red-500 hover:text-red-700">
@@ -135,7 +136,7 @@
             show('loginScreen');
         }
 
-        // === API ===
+        // === API AIRTABLE ===
         async function apiCall(table, action, data = {}, recordId = null) {
             try {
                 const res = await fetch(API_URL, {
@@ -176,7 +177,7 @@
             }
         }
 
-        // === CARGAR TIENDAS CON DUEÑO Y TELÉFONO ===
+        // === CARGAR TIENDAS ===
         async function loadTiendas() {
             const data = await apiCall('Tiendas', 'list');
             tiendas = Array.isArray(data) ? data : [];
@@ -205,10 +206,7 @@
                 const [yyyy, mm, dd] = fechaSus.split('-');
                 const textoFecha = `${dd}/${mm}/${yyyy}`;
 
-                let colorClass = '';
-                if (dias > 2) colorClass = 'text-green-600';
-                else if (dias >= 0) colorClass = 'text-yellow-600';
-                else colorClass = 'text-red-600';
+                let colorClass = dias > 2 ? 'text-green-600' : dias >= 0 ? 'text-yellow-600' : 'text-red-600';
 
                 const dueñoTexto = t.Dueño ? `<p class="text-sm text-indigo-600 font-medium"><i class="fas fa-user mr-1"></i>${t.Dueño}</p>` : '';
                 const telefonoTexto = t.Teléfono ? `<p class="text-sm text-gray-700"><i class="fas fa-phone mr-1"></i>${t.Teléfono}</p>` : '';
@@ -238,7 +236,7 @@
             }
         }
 
-        // === AGREGAR TIENDA CON DUEÑO Y TELÉFONO ===
+        // === AGREGAR TIENDA ===
         async function agregarTienda() {
             const nombre = document.getElementById('tiendaNombre').value.trim();
             const lugar = document.getElementById('tiendaLugar').value.trim();
@@ -258,51 +256,39 @@
             const fechaSus = exp.toISOString().split('T')[0];
 
             const res = await apiCall('Tiendas', 'create', { 
-                Nombre: nombre, 
-                Lugar: lugar, 
-                Dueño: dueno,
-                Teléfono: telefono,
-                User: user, 
-                Pass: pass,
-                FechaSuscripcion: fechaSus 
+                Nombre: nombre, Lugar: lugar, Dueño: dueno, Teléfono: telefono,
+                User: user, Pass: pass, FechaSuscripcion: fechaSus 
             });
             if (res.error) return;
 
             tiendas.push(res);
             loadTiendas();
-            document.getElementById('tiendaNombre').value = '';
-            document.getElementById('tiendaLugar').value = '';
-            document.getElementById('tiendaDueno').value = '';
-            document.getElementById('tiendaTelefono').value = '';
-            document.getElementById('tiendaUser').value = '';
-            document.getElementById('tiendaPass').value = '';
-            showNotification('Tienda agregada', 'success');
+            document.querySelectorAll('#adminPanel input').forEach(input => input.value = '');
+            showNotification('Tienda agregada a FiaoPro', 'success');
         }
 
-        // === RENOVAR Y ELIMINAR ===
+        // === RENOVAR / ELIMINAR ===
         async function renovarSuscripcion(i) {
             if (!confirm('¿Renovar suscripción por 30 días más?')) return;
             const hoy = new Date();
             const nuevaFecha = new Date(hoy);
             nuevaFecha.setDate(hoy.getDate() + 30);
             const fechaNueva = nuevaFecha.toISOString().split('T')[0];
-            const t = tiendas[i];
-            await apiCall('Tiendas', 'update', { FechaSuscripcion: fechaNueva }, t.id);
+            await apiCall('Tiendas', 'update', { FechaSuscripcion: fechaNueva }, tiendas[i].id);
             tiendas[i].FechaSuscripcion = fechaNueva;
             loadTiendas();
-            showNotification('Suscripción renovada por 30 días', 'success');
+            showNotification('Suscripción renovada', 'success');
         }
 
         async function eliminarTienda(i) {
             if (confirm('¿Eliminar esta tienda?')) {
-                const id = tiendas[i].id;
-                await apiCall('Tiendas', 'delete', {}, id);
+                await apiCall('Tiendas', 'delete', {}, tiendas[i].id);
                 tiendas.splice(i, 1);
                 loadTiendas();
             }
         }
 
-        // === DUEÑO (LOGIN Y CLIENTES) ===
+        // === LOGIN DUEÑO ===
         async function loginOwner() {
             const user = document.getElementById('ownerUser').value.trim();
             const pass = document.getElementById('ownerPass').value.trim();
@@ -311,8 +297,7 @@
                 document.getElementById('ownerError').innerText = 'Usuario o contraseña incorrectos';
                 return;
             }
-            const fechaSus = tienda.FechaSuscripcion;
-            if (fechaSus && diasHasta(fechaSus) < 0) {
+            if (tienda.FechaSuscripcion && diasHasta(tienda.FechaSuscripcion) < 0) {
                 document.getElementById('ownerError').innerText = 'Tu suscripción ha expirado. Contacta al administrador.';
                 return;
             }
@@ -324,6 +309,7 @@
             await loadClientes();
         }
 
+        // === CLIENTES ===
         async function loadClientes() {
             const data = await apiCall('Clientes', 'list');
             clientes = Array.isArray(data) ? data.map(c => ({ ...c, deudas: c.Deudas ? JSON.parse(c.Deudas) : [] })) : [];
@@ -350,22 +336,27 @@
             const query = document.getElementById('buscador').value.trim().toLowerCase();
             const cont = document.getElementById('resultadosBuscador');
             cont.innerHTML = '';
-            if (query === '') return;
-            const resultados = clientes.filter(c => c.Nombre.toLowerCase().includes(query) || c.Cedula.includes(query));
+            if (!query) return;
+
+            const resultados = clientes.filter(c => 
+                c.Nombre.toLowerCase().includes(query) || c.Cedula.includes(query)
+            );
+
             if (resultados.length === 0) {
                 cont.innerHTML = '<p class="text-gray-500 text-center">No se encontraron clientes</p>';
                 return;
             }
+
             resultados.forEach(c => {
-                const deudasTotal = c.deudas;
-                const debeAqui = deudasTotal.some(d => d.tienda === currentOwner.Nombre);
-                const deudasConFecha = deudasTotal.map(d => {
-                    const [yyyy, mm, dd] = d.fecha.split('-');
-                    return `${d.tienda} (${dd}/${mm}/${yyyy})`;
+                const debeAqui = c.deudas.some(d => d.tienda === currentOwner.Nombre);
+                const deudasConFecha = c.deudas.map(d => {
+                    const [y, m, d] = d.fecha.split('-');
+                    return `${d.tienda} (${d}/${m}/${y})`;
                 });
-                let estado = deudasConFecha.length === 0 
-                    ? '<span class="text-green-600 text-sm">• Paz y salvo</span>' 
+                const estado = deudasConFecha.length === 0 
+                    ? '<span class="text-green-600 text-sm">• Paz y salvo</span>'
                     : `<span class="text-red-600 text-sm">• Debe en: ${deudasConFecha.join(', ')}</span>`;
+
                 const div = document.createElement('div');
                 div.className = 'bg-white p-4 rounded-lg shadow-sm border card-hover';
                 div.innerHTML = `
@@ -389,35 +380,34 @@
 
         async function agregarDeuda(cedula) {
             const cliente = clientes.find(c => c.Cedula === cedula);
-            if (cliente.deudas.some(d => d.tienda === currentOwner.Nombre)) return alert('Ya marcaste deuda en esta tienda');
+            if (cliente.deudas.some(d => d.tienda === currentOwner.Nombre)) return alert('Ya marcaste deuda aquí');
             cliente.deudas.push({ fecha: new Date().toISOString().split('T')[0], tienda: currentOwner.Nombre });
             await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
             buscarCliente();
-            showNotification('Deuda marcada en esta tienda', 'success');
+            showNotification('Deuda marcada', 'success');
         }
 
         async function pagarDeuda(cedula) {
             const cliente = clientes.find(c => c.Cedula === cedula);
-            const debeAqui = cliente.deudas.some(d => d.tienda === currentOwner.Nombre);
-            if (!debeAqui) return alert('No hay deuda en esta tienda');
-            if (confirm('¿Marcar como pagado en esta tienda?')) {
+            if (!cliente.deudas.some(d => d.tienda === currentOwner.Nombre)) return;
+            if (confirm('¿Marcar como pagado?')) {
                 cliente.deudas = cliente.deudas.filter(d => d.tienda !== currentOwner.Nombre);
                 await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
                 buscarCliente();
-                showNotification('Pago registrado en esta tienda', 'success');
+                showNotification('Pago registrado', 'success');
             }
         }
 
         function showNotification(msg, type = 'success') {
             const div = document.createElement('div');
-            div.className = `fixed bottom-4 right-4 ${type==='success'?'bg-green-500':'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            div.className = `fixed bottom-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
             div.innerText = msg;
             document.body.appendChild(div);
             setTimeout(() => div.remove(), 3000);
         }
 
         // === INICIO ===
-        async function init() {
+        document.addEventListener('DOMContentLoaded', () => {
             show('loginScreen');
             setInterval(() => {
                 if (currentOwner) {
@@ -428,8 +418,7 @@
                     }
                 }
             }, 30000);
-        }
-        document.addEventListener('DOMContentLoaded', init);
+        });
     </script>
 </body>
 </html>
