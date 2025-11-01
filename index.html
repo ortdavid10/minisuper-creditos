@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FiaoPro</title>
-    <!-- Tailwind CDN (OK para desarrollo y demo) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>Store</text></svg>">
     <style>
         .hidden { display: none !important; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
@@ -116,13 +114,12 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT AL FINAL (SIEMPRE) -->
+    <!-- JAVASCRIPT AL FINAL -->
     <script>
         const API_URL = '/api/airtable';
         const adminCredenciales = { user: "Ortdavid10", pass: "operador2864" };
         let tiendas = [], clientes = [], currentOwner = null;
 
-        // === NAVEGACIÓN ===
         function show(panelId) {
             ['loginScreen', 'adminLogin', 'adminPanel', 'ownerLogin', 'ownerPanel'].forEach(id => {
                 const el = document.getElementById(id);
@@ -131,6 +128,7 @@
             const panel = document.getElementById(panelId);
             if (panel) panel.classList.remove('hidden');
         }
+
         function showAdminLogin() { show('adminLogin'); }
         function showOwnerLogin() { show('ownerLogin'); }
         function backToMain() { show('loginScreen'); }
@@ -140,7 +138,6 @@
             show('loginScreen');
         }
 
-        // === API AIRTABLE ===
         async function apiCall(table, action, data = {}, recordId = null) {
             try {
                 const res = await fetch(API_URL, {
@@ -160,7 +157,6 @@
             }
         }
 
-        // === DÍAS RESTANTES ===
         function diasHasta(fechaISO) {
             const hoy = new Date();
             const exp = new Date(fechaISO);
@@ -168,7 +164,6 @@
             return Math.ceil(diff / (1000 * 60 * 60 * 24));
         }
 
-        // === LOGIN ADMIN ===
         async function loginAdmin() {
             const user = document.getElementById('adminUser').value.trim();
             const pass = document.getElementById('adminPass').value;
@@ -181,47 +176,38 @@
             }
         }
 
-        // === CARGAR TIENDAS ===
         async function loadTiendas() {
             const data = await apiCall('Tiendas', 'list');
             tiendas = Array.isArray(data) ? data : [];
             const list = document.getElementById('tiendasList');
-            list.innerHTML = tiendas.length === 0 
-                ? '<p class="text-gray-500 text-center">No hay tiendas registradas</p>' 
-                : '';
+            list.innerHTML = tiendas.length === 0 ? '<p class="text-gray-500 text-center">No hay tiendas registradas</p>' : '';
 
             for (let i = 0; i < tiendas.length; i++) {
                 const t = tiendas[i];
-                let fechaSus = t.FechaSuscripcion;
-
-                if (!fechaSus) {
+                let fechaSus = t.FechaSuscripcion || (async () => {
                     const hoy = new Date();
-                    const exp = new Date(hoy);
-                    exp.setDate(hoy.getDate() + 30);
-                    fechaSus = exp.toISOString().split('T')[0];
-                    await apiCall('Tiendas', 'update', { FechaSuscripcion: fechaSus }, t.id);
-                    tiendas[i].FechaSuscripcion = fechaSus;
-                }
-
-                const div = document.createElement('div');
-                div.className = 'bg-white p-5 rounded-lg shadow-sm border card-hover';
+                    const exp = new Date(hoy); exp.setDate(hoy.getDate() + 30);
+                    const nueva = exp.toISOString().split('T')[0];
+                    await apiCall('Tiendas', 'update', { FechaSuscripcion: nueva }, t.id);
+                    return nueva;
+                })();
+                if (typeof fechaSus.then === 'function') fechaSus = await fechaSus;
+                tiendas[i].FechaSuscripcion = fechaSus;
 
                 const dias = diasHasta(fechaSus);
                 const [yyyy, mm, dd] = fechaSus.split('-');
                 const textoFecha = `${dd}/${mm}/${yyyy}`;
-
                 let colorClass = dias > 2 ? 'text-green-600' : dias >= 0 ? 'text-yellow-600' : 'text-red-600';
 
-                const dueñoTexto = t.Dueño ? `<p class="text-sm text-indigo-600 font-medium"><i class="fas fa-user mr-1"></i>${t.Dueño}</p>` : '';
-                const telefonoTexto = t.Teléfono ? `<p class="text-sm text-gray-700"><i class="fas fa-phone mr-1"></i>${t.Teléfono}</p>` : '';
-
+                const div = document.createElement('div');
+                div.className = 'bg-white p-5 rounded-lg shadow-sm border card-hover';
                 div.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div class="flex-1">
                             <h4 class="font-semibold text-lg">${t.Nombre}</h4>
                             <p class="text-sm text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>${t.Lugar}</p>
-                            ${dueñoTexto}
-                            ${telefonoTexto}
+                            ${t.Dueño ? `<p class="text-sm text-indigo-600 font-medium"><i class="fas fa-user mr-1"></i>${t.Dueño}</p>` : ''}
+                            ${t.Teléfono ? `<p class="text-sm text-gray-700"><i class="fas fa-phone mr-1"></i>${t.Teléfono}</p>` : ''}
                             <p class="text-sm font-medium ${colorClass} mt-1">
                                 <i class="fas fa-calendar-alt mr-1"></i>Suscripción: ${textoFecha}
                             </p>
@@ -240,70 +226,61 @@
             }
         }
 
-        // === AGREGAR TIENDA ===
         async function agregarTienda() {
-            const nombre = document.getElementById('tiendaNombre').value.trim();
-            const lugar = document.getElementById('tiendaLugar').value.trim();
-            const dueno = document.getElementById('tiendaDueno').value.trim();
-            const telefono = document.getElementById('tiendaTelefono').value.trim();
-            const user = document.getElementById('tiendaUser').value.trim();
-            const pass = document.getElementById('tiendaPass').value.trim();
-
-            if (!nombre || !lugar || !dueno || !telefono || !user || !pass) {
-                alert('Complete todos los campos');
-                return;
+            const inputs = ['tiendaNombre', 'tiendaLugar', 'tiendaDueno', 'tiendaTelefono', 'tiendaUser', 'tiendaPass'];
+            const values = {};
+            for (const id of inputs) {
+                values[id] = document.getElementById(id).value.trim();
+                if (!values[id]) return alert('Complete todos los campos');
             }
 
             const hoy = new Date();
-            const exp = new Date(hoy);
-            exp.setDate(hoy.getDate() + 30);
+            const exp = new Date(hoy); exp.setDate(hoy.getDate() + 30);
             const fechaSus = exp.toISOString().split('T')[0];
 
-            const res = await apiCall('Tiendas', 'create', { 
-                Nombre: nombre, Lugar: lugar, Dueño: dueno, Teléfono: telefono,
-                User: user, Pass: pass, FechaSuscripcion: fechaSus 
+            const res = await apiCall('Tiendas', 'create', {
+                Nombre: values.tiendaNombre,
+                Lugar: values.tiendaLugar,
+                Dueño: values.tiendaDueno,
+                Teléfono: values.tiendaTelefono,
+                User: values.tiendaUser,
+                Pass: values.tiendaPass,
+                FechaSuscripcion: fechaSus
             });
             if (res.error) return;
 
             tiendas.push(res);
             loadTiendas();
-            document.querySelectorAll('#adminPanel input').forEach(input => input.value = '');
-            showNotification('Tienda agregada a FiaoPro', 'success');
+            inputs.forEach(id => document.getElementById(id).value = '');
+            alert('Tienda agregada a FiaoPro');
         }
 
-        // === RENOVAR / ELIMINAR ===
         async function renovarSuscripcion(i) {
-            if (!confirm('¿Renovar suscripción por 30 días más?')) return;
+            if (!confirm('¿Renovar 30 días?')) return;
             const hoy = new Date();
-            const nuevaFecha = new Date(hoy);
-            nuevaFecha.setDate(hoy.getDate() + 30);
-            const fechaNueva = nuevaFecha.toISOString().split('T')[0];
+            const nueva = new Date(hoy); nueva.setDate(hoy.getDate() + 30);
+            const fechaNueva = nueva.toISOString().split('T')[0];
             await apiCall('Tiendas', 'update', { FechaSuscripcion: fechaNueva }, tiendas[i].id);
             tiendas[i].FechaSuscripcion = fechaNueva;
             loadTiendas();
-            showNotification('Suscripción renovada', 'success');
+            alert('Suscripción renovada');
         }
 
         async function eliminarTienda(i) {
-            if (confirm('¿Eliminar esta tienda?')) {
+            if (confirm('¿Eliminar tienda?')) {
                 await apiCall('Tiendas', 'delete', {}, tiendas[i].id);
                 tiendas.splice(i, 1);
                 loadTiendas();
             }
         }
 
-        // === LOGIN DUEÑO ===
         async function loginOwner() {
             const user = document.getElementById('ownerUser').value.trim();
             const pass = document.getElementById('ownerPass').value.trim();
             const tienda = tiendas.find(t => t.User === user && t.Pass === pass);
-            if (!tienda) {
-                document.getElementById('ownerError').innerText = 'Usuario o contraseña incorrectos';
-                return;
-            }
+            if (!tienda) return document.getElementById('ownerError').innerText = 'Datos incorrectos';
             if (tienda.FechaSuscripcion && diasHasta(tienda.FechaSuscripcion) < 0) {
-                document.getElementById('ownerError').innerText = 'Tu suscripción ha expirado. Contacta al administrador.';
-                return;
+                return document.getElementById('ownerError').innerText = 'Suscripción expirada';
             }
             currentOwner = { id: tienda.id, Nombre: tienda.Nombre, Lugar: tienda.Lugar };
             show('ownerPanel');
@@ -313,7 +290,6 @@
             await loadClientes();
         }
 
-        // === CLIENTES ===
         async function loadClientes() {
             const data = await apiCall('Clientes', 'list');
             clientes = Array.isArray(data) ? data.map(c => ({ ...c, deudas: c.Deudas ? JSON.parse(c.Deudas) : [] })) : [];
@@ -333,7 +309,7 @@
             clientes.push({ ...res, deudas: [] });
             document.getElementById('clienteNombre').value = '';
             document.getElementById('clienteCedula').value = '';
-            showNotification('Cliente agregado', 'success');
+            alert('Cliente agregado');
         }
 
         function buscarCliente() {
@@ -342,27 +318,22 @@
             cont.innerHTML = '';
             if (!query) return;
 
-            const resultados = clientes.filter(c => 
-                c.Nombre.toLowerCase().includes(query) || c.Cedula.includes(query)
-            );
-
+            const resultados = clientes.filter(c => c.Nombre.toLowerCase().includes(query) || c.Cedula.includes(query));
             if (resultados.length === 0) {
-                cont.innerHTML = '<p class="text-gray-500 text-center">No se encontraron clientes</p>';
+                cont.innerHTML = '<p class="text-gray-500 text-center">No encontrado</p>';
                 return;
             }
 
             resultados.forEach(c => {
-                const debeAqui = c.deudas.some(deuda => deuda.tienda === currentOwner.Nombre);
-                const deudasConFecha = c.deudas.map(deuda => {
-                    const [y, m, d] = deuda.fecha.split('-');
-                    return `${deuda.tienda} (${d}/${m}/${y})`;
-                });
-                const estado = deudasConFecha.length === 0 
-                    ? '<span class="text-green-600 text-sm">• Paz y salvo</span>'
-                    : `<span class="text-red-600 text-sm">• Debe en: ${deudasConFecha.join(', ')}</span>';
+                const debeAqui = c.deudas.some(d => d.tienda === currentOwner.Nombre);
+                const deudasTexto = c.deudas.map(d => {
+                    const [y, m, dd] = d.fecha.split('-');
+                    return `${d.tienda} (${dd}/${m}/${y})`;
+                }).join(', ');
+                const estado = deudasTexto ? `<span class="text-red-600 text-sm">• Debe en: ${deudasTexto}</span>` : '<span class="text-green-600 text-sm">• Paz y salvo</span>';
 
                 const div = document.createElement('div');
-                div.className = 'bg-white p-4 rounded-lg shadow-sm border card-hover';
+                div.className = 'bg-white p-4 rounded-lg shadow-sm border';
                 div.innerHTML = `
                     <div class="flex justify-between items-center">
                         <div>
@@ -373,7 +344,7 @@
                         <div class="flex gap-2">
                             <button onclick="agregarDeuda('${c.Cedula}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Debe</button>
                             <button onclick="pagarDeuda('${c.Cedula}')" class="${debeAqui ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400'} text-white px-3 py-1 rounded text-sm" ${!debeAqui ? 'disabled' : ''}>
-                                ${debeAqui ? 'Pagado' : 'No debe aquí'}
+                                ${debeAqui ? 'Pagado' : 'No debe'}
                             </button>
                         </div>
                     </div>
@@ -384,11 +355,11 @@
 
         async function agregarDeuda(cedula) {
             const cliente = clientes.find(c => c.Cedula === cedula);
-            if (cliente.deudas.some(d => d.tienda === currentOwner.Nombre)) return alert('Ya marcaste deuda aquí');
+            if (cliente.deudas.some(d => d.tienda === currentOwner.Nombre)) return alert('Ya debe aquí');
             cliente.deudas.push({ fecha: new Date().toISOString().split('T')[0], tienda: currentOwner.Nombre });
             await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
             buscarCliente();
-            showNotification('Deuda marcada', 'success');
+            alert('Deuda marcada');
         }
 
         async function pagarDeuda(cedula) {
@@ -398,30 +369,12 @@
                 cliente.deudas = cliente.deudas.filter(d => d.tienda !== currentOwner.Nombre);
                 await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
                 buscarCliente();
-                showNotification('Pago registrado', 'success');
+                alert('Pago registrado');
             }
         }
 
-        function showNotification(msg, type = 'success') {
-            const div = document.createElement('div');
-            div.className = `fixed bottom-4 right-4 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-            div.innerText = msg;
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), 3000);
-        }
-
-        // === INICIO ===
         document.addEventListener('DOMContentLoaded', () => {
             show('loginScreen');
-            setInterval(() => {
-                if (currentOwner) {
-                    const tienda = tiendas.find(t => t.id === currentOwner.id);
-                    if (tienda && tienda.FechaSuscripcion && diasHasta(tienda.FechaSuscripcion) < 0) {
-                        alert('Tu suscripción ha expirado. Serás desconectado.');
-                        logout();
-                    }
-                }
-            }, 30000);
         });
     </script>
 </body>
