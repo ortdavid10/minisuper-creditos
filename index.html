@@ -173,6 +173,7 @@
             }
         }
 
+        // === LOAD TIENDAS CON BOTONES ===
         async function loadTiendas() {
             const data = await apiCall('Tiendas', 'list');
             tiendas = Array.isArray(data) ? data : [];
@@ -185,7 +186,6 @@
                 const t = tiendas[i];
                 let fechaSus = t.FechaSuscripcion;
 
-                // Si no tiene fecha, asignar hoy + 30 días y guardar
                 if (!fechaSus) {
                     const hoy = new Date();
                     const exp = new Date(hoy);
@@ -220,13 +220,35 @@
                                 <i class="fas fa-calendar-alt mr-1"></i>Suscripción: ${textoFecha}
                             </p>
                         </div>
-                        <button onclick="eliminarTienda(${i})" class="text-red-500 hover:text-red-700 mt-1">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <div class="flex gap-2 mt-1">
+                            <button onclick="renovarSuscripcion(${i})" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-2 py-1 rounded">
+                                <i class="fas fa-sync-alt mr-1"></i>Renovar
+                            </button>
+                            <button onclick="eliminarTienda(${i})" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
                 list.appendChild(div);
             }
+        }
+
+        // === RENOVAR SUSCRIPCIÓN ===
+        async function renovarSuscripcion(i) {
+            if (!confirm('¿Renovar suscripción por 30 días más?')) return;
+
+            const hoy = new Date();
+            const nuevaFecha = new Date(hoy);
+            nuevaFecha.setDate(hoy.getDate() + 30);
+            const fechaNueva = nuevaFecha.toISOString().split('T')[0];
+
+            const t = tiendas[i];
+            await apiCall('Tiendas', 'update', { FechaSuscripcion: fechaNueva }, t.id);
+            tiendas[i].FechaSuscripcion = fechaNueva;
+
+            loadTiendas();
+            showNotification('Suscripción renovada por 30 días', 'success');
         }
 
         async function agregarTienda() {
@@ -272,25 +294,33 @@
             }
         }
 
-        // === DUEÑO ===
+        // === DUEÑO: BLOQUEO AL LOGIN + EN TIEMPO REAL ===
         async function loginOwner() {
             const user = document.getElementById('ownerUser').value.trim();
             const pass = document.getElementById('ownerPass').value.trim();
             const tienda = tiendas.find(t => t.User === user && t.Pass === pass);
-            if (tienda) {
-                currentOwner = {
-                    id: tienda.id,
-                    Nombre: tienda.Nombre,
-                    Lugar: tienda.Lugar
-                };
-                show('ownerPanel');
-                document.getElementById('tiendaNameDisplay').innerText = tienda.Nombre;
-                document.getElementById('tiendaLocation').innerText = tienda.Lugar;
-                document.getElementById('ownerError').innerText = '';
-                await loadClientes();
-            } else {
+
+            if (!tienda) {
                 document.getElementById('ownerError').innerText = 'Usuario o contraseña incorrectos';
+                return;
             }
+
+            const fechaSus = tienda.FechaSuscripcion;
+            if (fechaSus && diasHasta(fechaSus) < 0) {
+                document.getElementById('ownerError').innerText = 'Tu suscripción ha expirado. Contacta al administrador.';
+                return;
+            }
+
+            currentOwner = {
+                id: tienda.id,
+                Nombre: tienda.Nombre,
+                Lugar: tienda.Lugar
+            };
+            show('ownerPanel');
+            document.getElementById('tiendaNameDisplay').innerText = tienda.Nombre;
+            document.getElementById('tiendaLocation').innerText = tienda.Lugar;
+            document.getElementById('ownerError').innerText = '';
+            await loadClientes();
         }
 
         async function loadClientes() {
@@ -342,10 +372,10 @@
             }
 
             resultados.forEach(c => {
-                const deudasTotales = c.deudas;
-                const debeAqui = deudasTotales.some(d => d.tienda === currentOwner.Nombre);
+                const deudasTotal = c.deudas;
+                const debeAqui = deudasTotal.some(d => d.tienda === currentOwner.Nombre);
 
-                const deudasConFecha = deudasTotales.map(d => {
+                const deudasConFecha = deudasTotal.map(d => {
                     const [yyyy, mm, dd] = d.fecha.split('-');
                     return `${d.tienda} (${dd}/${mm}/${yyyy})`;
                 });
@@ -381,12 +411,10 @@
 
         async function agregarDeuda(cedula) {
             const cliente = clientes.find(c => c.Cedula === cedula);
-            
             if (cliente.deudas.some(d => d.tienda === currentOwner.Nombre)) {
                 alert('Ya marcaste deuda en esta tienda');
                 return;
             }
-
             cliente.deudas.push({ 
                 fecha: new Date().toISOString().split('T')[0], 
                 tienda: currentOwner.Nombre 
@@ -399,12 +427,10 @@
         async function pagarDeuda(cedula) {
             const cliente = clientes.find(c => c.Cedula === cedula);
             const debeAqui = cliente.deudas.some(d => d.tienda === currentOwner.Nombre);
-            
             if (!debeAqui) {
                 alert('No hay deuda en esta tienda');
                 return;
             }
-            
             if (confirm('¿Marcar como pagado en esta tienda?')) {
                 cliente.deudas = cliente.deudas.filter(d => d.tienda !== currentOwner.Nombre);
                 await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
@@ -421,10 +447,24 @@
             setTimeout(() => div.remove(), 3000);
         }
 
-        // === INICIO ===
+        // === INICIO CON BLOQUEO EN TIEMPO REAL ===
         async function init() {
             await loadTiendas();
             show('loginScreen');
+
+            // VERIFICAR SUSCRIPCIÓN CADA 30 SEGUNDOS
+            setInterval(() => {
+                if (currentOwner) {
+                    const tienda = tiendas.find(t => t.id === currentOwner.id);
+                    if (tienda && tienda.FechaSuscripcion) {
+                        const dias = diasHasta(tienda.FechaSuscripcion);
+                        if (dias < 0) {
+                            alert('Tu suscripción ha expirado. Serás desconectado.');
+                            logout();
+                        }
+                    }
+                }
+            }, 30000); // 30 segundos
         }
         document.addEventListener('DOMContentLoaded', init);
     </script>
