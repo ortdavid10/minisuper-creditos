@@ -52,11 +52,14 @@
                 </button>
             </div>
 
+            <!-- FORMULARIO CON DUEÑO Y TELÉFONO -->
             <div class="bg-indigo-50 p-5 rounded-lg mb-6">
                 <h3 class="font-semibold text-indigo-800 mb-3">Agregar Nueva Tienda</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <input type="text" id="tiendaNombre" placeholder="Nombre de la tienda" class="p-3 border rounded-lg">
                     <input type="text" id="tiendaLugar" placeholder="Ubicación" class="p-3 border rounded-lg">
+                    <input type="text" id="tiendaDueno" placeholder="Nombre del dueño" class="p-3 border rounded-lg">
+                    <input type="text" id="tiendaTelefono" placeholder="Teléfono del dueño" class="p-3 border rounded-lg">
                     <input type="text" id="tiendaUser" placeholder="Usuario del dueño" class="p-3 border rounded-lg">
                     <input type="password" id="tiendaPass" placeholder="Contraseña del dueño" class="p-3 border rounded-lg">
                 </div>
@@ -132,7 +135,7 @@
             show('loginScreen');
         }
 
-        // === API CON ALERT DE ERROR ===
+        // === API ===
         async function apiCall(table, action, data = {}, recordId = null) {
             try {
                 const res = await fetch(API_URL, {
@@ -152,7 +155,7 @@
             }
         }
 
-        // === FUNCIÓN AUXILIAR: Días restantes ===
+        // === DÍAS RESTANTES ===
         function diasHasta(fechaISO) {
             const hoy = new Date();
             const exp = new Date(fechaISO);
@@ -160,20 +163,20 @@
             return Math.ceil(diff / (1000 * 60 * 60 * 24));
         }
 
-        // === ADMIN: CARGA CORRECTA ===
+        // === LOGIN ADMIN ===
         async function loginAdmin() {
             const user = document.getElementById('adminUser').value.trim();
             const pass = document.getElementById('adminPass').value;
             if (user === adminCredenciales.user && pass === adminCredenciales.pass) {
                 document.getElementById('adminError').innerText = '';
                 show('adminPanel');
-                await loadTiendas(); // ← CARGA DESPUÉS DE MOSTRAR EL PANEL
+                await loadTiendas();
             } else {
                 document.getElementById('adminError').innerText = 'Usuario o contraseña incorrectos';
             }
         }
 
-        // === LOAD TIENDAS CON DUEÑO Y TELÉFONO (CON TILDE) ===
+        // === CARGAR TIENDAS CON DUEÑO Y TELÉFONO ===
         async function loadTiendas() {
             const data = await apiCall('Tiendas', 'list');
             tiendas = Array.isArray(data) ? data : [];
@@ -203,13 +206,9 @@
                 const textoFecha = `${dd}/${mm}/${yyyy}`;
 
                 let colorClass = '';
-                if (dias > 2) {
-                    colorClass = 'text-green-600';
-                } else if (dias >= 0) {
-                    colorClass = 'text-yellow-600';
-                } else {
-                    colorClass = 'text-red-600';
-                }
+                if (dias > 2) colorClass = 'text-green-600';
+                else if (dias >= 0) colorClass = 'text-yellow-600';
+                else colorClass = 'text-red-600';
 
                 const dueñoTexto = t.Dueño ? `<p class="text-sm text-indigo-600 font-medium"><i class="fas fa-user mr-1"></i>${t.Dueño}</p>` : '';
                 const telefonoTexto = t.Teléfono ? `<p class="text-sm text-gray-700"><i class="fas fa-phone mr-1"></i>${t.Teléfono}</p>` : '';
@@ -226,7 +225,7 @@
                             </p>
                         </div>
                         <div class="flex gap-2 mt-1">
-                            <button onclick="renovarSuscripcion(${i})" class="bg-emerald-500 hover:bg-emerald-600 text-white text text-xs px-2 py-1 rounded">
+                            <button onclick="renovarSuscripcion(${i})" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-2 py-1 rounded">
                                 <i class="fas fa-sync-alt mr-1"></i>Renovar
                             </button>
                             <button onclick="eliminarTienda(${i})" class="text-red-500 hover:text-red-700">
@@ -239,30 +238,16 @@
             }
         }
 
-        // === RENOVAR SUSCRIPCIÓN ===
-        async function renovarSuscripcion(i) {
-            if (!confirm('¿Renovar suscripción por 30 días más?')) return;
-
-            const hoy = new Date();
-            const nuevaFecha = new Date(hoy);
-            nuevaFecha.setDate(hoy.getDate() + 30);
-            const fechaNueva = nuevaFecha.toISOString().split('T')[0];
-
-            const t = tiendas[i];
-            await apiCall('Tiendas', 'update', { FechaSuscripcion: fechaNueva }, t.id);
-            tiendas[i].FechaSuscripcion = fechaNueva;
-
-            loadTiendas();
-            showNotification('Suscripción renovada por 30 días', 'success');
-        }
-
+        // === AGREGAR TIENDA CON DUEÑO Y TELÉFONO ===
         async function agregarTienda() {
             const nombre = document.getElementById('tiendaNombre').value.trim();
             const lugar = document.getElementById('tiendaLugar').value.trim();
+            const dueno = document.getElementById('tiendaDueno').value.trim();
+            const telefono = document.getElementById('tiendaTelefono').value.trim();
             const user = document.getElementById('tiendaUser').value.trim();
             const pass = document.getElementById('tiendaPass').value.trim();
 
-            if (!nombre || !lugar || !user || !pass) {
+            if (!nombre || !lugar || !dueno || !telefono || !user || !pass) {
                 alert('Complete todos los campos');
                 return;
             }
@@ -275,6 +260,8 @@
             const res = await apiCall('Tiendas', 'create', { 
                 Nombre: nombre, 
                 Lugar: lugar, 
+                Dueño: dueno,
+                Teléfono: telefono,
                 User: user, 
                 Pass: pass,
                 FechaSuscripcion: fechaSus 
@@ -285,9 +272,25 @@
             loadTiendas();
             document.getElementById('tiendaNombre').value = '';
             document.getElementById('tiendaLugar').value = '';
+            document.getElementById('tiendaDueno').value = '';
+            document.getElementById('tiendaTelefono').value = '';
             document.getElementById('tiendaUser').value = '';
             document.getElementById('tiendaPass').value = '';
             showNotification('Tienda agregada', 'success');
+        }
+
+        // === RENOVAR Y ELIMINAR ===
+        async function renovarSuscripcion(i) {
+            if (!confirm('¿Renovar suscripción por 30 días más?')) return;
+            const hoy = new Date();
+            const nuevaFecha = new Date(hoy);
+            nuevaFecha.setDate(hoy.getDate() + 30);
+            const fechaNueva = nuevaFecha.toISOString().split('T')[0];
+            const t = tiendas[i];
+            await apiCall('Tiendas', 'update', { FechaSuscripcion: fechaNueva }, t.id);
+            tiendas[i].FechaSuscripcion = fechaNueva;
+            loadTiendas();
+            showNotification('Suscripción renovada por 30 días', 'success');
         }
 
         async function eliminarTienda(i) {
@@ -299,28 +302,21 @@
             }
         }
 
-        // === DUEÑO ===
+        // === DUEÑO (LOGIN Y CLIENTES) ===
         async function loginOwner() {
             const user = document.getElementById('ownerUser').value.trim();
             const pass = document.getElementById('ownerPass').value.trim();
             const tienda = tiendas.find(t => t.User === user && t.Pass === pass);
-
             if (!tienda) {
                 document.getElementById('ownerError').innerText = 'Usuario o contraseña incorrectos';
                 return;
             }
-
             const fechaSus = tienda.FechaSuscripcion;
             if (fechaSus && diasHasta(fechaSus) < 0) {
                 document.getElementById('ownerError').innerText = 'Tu suscripción ha expirado. Contacta al administrador.';
                 return;
             }
-
-            currentOwner = {
-                id: tienda.id,
-                Nombre: tienda.Nombre,
-                Lugar: tienda.Lugar
-            };
+            currentOwner = { id: tienda.id, Nombre: tienda.Nombre, Lugar: tienda.Lugar };
             show('ownerPanel');
             document.getElementById('tiendaNameDisplay').innerText = tienda.Nombre;
             document.getElementById('tiendaLocation').innerText = tienda.Lugar;
@@ -330,10 +326,7 @@
 
         async function loadClientes() {
             const data = await apiCall('Clientes', 'list');
-            clientes = Array.isArray(data) ? data.map(c => ({
-                ...c,
-                deudas: c.Deudas ? JSON.parse(c.Deudas) : []
-            })) : [];
+            clientes = Array.isArray(data) ? data.map(c => ({ ...c, deudas: c.Deudas ? JSON.parse(c.Deudas) : [] })) : [];
             document.getElementById('resultadosBuscador').innerHTML = '';
         }
 
@@ -342,17 +335,11 @@
             const cedula = document.getElementById('clienteCedula').value.trim();
             if (!nombre || !cedula) return alert('Faltan datos');
             if (clientes.some(c => c.Cedula === cedula)) return alert('Cliente ya existe');
-
             const res = await apiCall('Clientes', 'create', {
-                Nombre: nombre,
-                Cedula: cedula,
-                Tienda: [currentOwner.id],
-                "Fecha de registro": new Date().toISOString().split('T')[0],
-                Deudas: "[]"
+                Nombre: nombre, Cedula: cedula, Tienda: [currentOwner.id],
+                "Fecha de registro": new Date().toISOString().split('T')[0], Deudas: "[]"
             });
-
             if (res.error) return;
-
             clientes.push({ ...res, deudas: [] });
             document.getElementById('clienteNombre').value = '';
             document.getElementById('clienteCedula').value = '';
@@ -363,38 +350,24 @@
             const query = document.getElementById('buscador').value.trim().toLowerCase();
             const cont = document.getElementById('resultadosBuscador');
             cont.innerHTML = '';
-
             if (query === '') return;
-
-            const resultados = clientes.filter(c => 
-                c.Nombre.toLowerCase().includes(query) || 
-                c.Cedula.includes(query)
-            );
-
+            const resultados = clientes.filter(c => c.Nombre.toLowerCase().includes(query) || c.Cedula.includes(query));
             if (resultados.length === 0) {
                 cont.innerHTML = '<p class="text-gray-500 text-center">No se encontraron clientes</p>';
                 return;
             }
-
             resultados.forEach(c => {
                 const deudasTotal = c.deudas;
                 const debeAqui = deudasTotal.some(d => d.tienda === currentOwner.Nombre);
-
                 const deudasConFecha = deudasTotal.map(d => {
                     const [yyyy, mm, dd] = d.fecha.split('-');
                     return `${d.tienda} (${dd}/${mm}/${yyyy})`;
                 });
-
-                let estado = '';
-                if (deudasConFecha.length === 0) {
-                    estado = '<span class="text-green-600 text-sm">• Paz y salvo</span>';
-                } else {
-                    estado = `<span class="text-red-600 text-sm">• Debe en: ${deudasConFecha.join(', ')}</span>`;
-                }
-
+                let estado = deudasConFecha.length === 0 
+                    ? '<span class="text-green-600 text-sm">• Paz y salvo</span>' 
+                    : `<span class="text-red-600 text-sm">• Debe en: ${deudasConFecha.join(', ')}</span>`;
                 const div = document.createElement('div');
                 div.className = 'bg-white p-4 rounded-lg shadow-sm border card-hover';
-
                 div.innerHTML = `
                     <div class="flex justify-between items-center">
                         <div>
@@ -416,14 +389,8 @@
 
         async function agregarDeuda(cedula) {
             const cliente = clientes.find(c => c.Cedula === cedula);
-            if (cliente.deudas.some(d => d.tienda === currentOwner.Nombre)) {
-                alert('Ya marcaste deuda en esta tienda');
-                return;
-            }
-            cliente.deudas.push({ 
-                fecha: new Date().toISOString().split('T')[0], 
-                tienda: currentOwner.Nombre 
-            });
+            if (cliente.deudas.some(d => d.tienda === currentOwner.Nombre)) return alert('Ya marcaste deuda en esta tienda');
+            cliente.deudas.push({ fecha: new Date().toISOString().split('T')[0], tienda: currentOwner.Nombre });
             await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
             buscarCliente();
             showNotification('Deuda marcada en esta tienda', 'success');
@@ -432,10 +399,7 @@
         async function pagarDeuda(cedula) {
             const cliente = clientes.find(c => c.Cedula === cedula);
             const debeAqui = cliente.deudas.some(d => d.tienda === currentOwner.Nombre);
-            if (!debeAqui) {
-                alert('No hay deuda en esta tienda');
-                return;
-            }
+            if (!debeAqui) return alert('No hay deuda en esta tienda');
             if (confirm('¿Marcar como pagado en esta tienda?')) {
                 cliente.deudas = cliente.deudas.filter(d => d.tienda !== currentOwner.Nombre);
                 await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
@@ -452,19 +416,15 @@
             setTimeout(() => div.remove(), 3000);
         }
 
-        // === INICIO SIN CARGA INICIAL ===
+        // === INICIO ===
         async function init() {
             show('loginScreen');
-
             setInterval(() => {
                 if (currentOwner) {
                     const tienda = tiendas.find(t => t.id === currentOwner.id);
-                    if (tienda && tienda.FechaSuscripcion) {
-                        const dias = diasHasta(tienda.FechaSuscripcion);
-                        if (dias < 0) {
-                            alert('Tu suscripción ha expirado. Serás desconectado.');
-                            logout();
-                        }
+                    if (tienda && tienda.FechaSuscripcion && diasHasta(tienda.FechaSuscripcion) < 0) {
+                        alert('Tu suscripción ha expirado. Serás desconectado.');
+                        logout();
                     }
                 }
             }, 30000);
