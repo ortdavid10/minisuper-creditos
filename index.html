@@ -173,7 +173,7 @@
             }
         }
 
-        // === LOAD TIENDAS CON BOTONES ===
+        // === LOAD TIENDAS CON NOMBRE Y TELÉFONO (CON TILDE) ===
         async function loadTiendas() {
             const data = await apiCall('Tiendas', 'list');
             tiendas = Array.isArray(data) ? data : [];
@@ -211,11 +211,18 @@
                     colorClass = 'text-red-600';
                 }
 
+                // NOMBRE DEL DUEÑO
+                const dueñoTexto = t.Dueño ? `<p class="text-sm text-indigo-600 font-medium"><i class="fas fa-user mr-1"></i>${t.Dueño}</p>` : '';
+                // TELÉFONO DEL DUEÑO (con tilde en el campo)
+                const telefonoTexto = t.Teléfono ? `<p class="text-sm text-gray-700"><i class="fas fa-phone mr-1"></i>${t.Teléfono}</p>` : '';
+
                 div.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div class="flex-1">
                             <h4 class="font-semibold text-lg">${t.Nombre}</h4>
                             <p class="text-sm text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>${t.Lugar}</p>
+                            ${dueñoTexto}
+                            ${telefonoTexto}
                             <p class="text-sm font-medium ${colorClass} mt-1">
                                 <i class="fas fa-calendar-alt mr-1"></i>Suscripción: ${textoFecha}
                             </p>
