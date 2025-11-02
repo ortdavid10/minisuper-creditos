@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "echo 'Build completo' && cp -r . ../build-temp && mv ../build-temp/* ."
+    "build": "echo 'Build completo'"
   },
   "dependencies": {}
 }
