@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FiaoPro</title>
 
-    <!-- ÍCONOS PARA IPHONE Y ANDROID -->
+    <!-- ÍCONOS PARA IPHONE, ANDROID Y PESTAÑA -->
     <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
     <link rel="icon" href="/icon-192.png" sizes="192x192">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1E40AF">
 
@@ -20,368 +21,298 @@
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <!-- PANTALLA INICIAL -->
-        <div id="loginScreen" class="bg-white rounded-xl shadow-md p-8 fade-in">
-            <div class="text-center mb-8">
-                <i class="fas fa-store-alt text-6xl text-indigo-500 mb-4"></i>
-                <h2 class="text-2xl font-semibold text-gray-800">Bienvenido a FiaoPro</h2>
-                <p class="text-sm text-gray-600 mt-2">Controla tus fiados como un pro</p>
-            </div>
-            <div class="flex flex-col md:flex-row gap-4 justify-center">
-                <button onclick="showOwnerLogin()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg flex items-center gap-2">
-                    <i class="fas fa-user-tie"></i> Dueño de Negocio
-                </button>
-                <button onclick="showAdminLogin()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-6 rounded-lg flex items-center gap-2">
-                    <i class="fas fa-user-shield"></i> Administrador
-                </button>
-            </div>
-        </div>
+<body class="bg-gradient-to-br from-blue-50 to-green-50 min-h-screen">
 
-        <!-- LOGIN ADMIN -->
-        <div id="adminLogin" class="hidden bg-white rounded-xl shadow-md p-8 fade-in">
-            <button onclick="backToMain()" class="mb-4 text-gray-600 hover:text-gray-800">
-                <i class="fas fa-arrow-left"></i> Volver
+    <!-- HEADER -->
+    <header class="bg-gradient-to-r from-blue-600 to-green-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                    <span class="text-blue-600 font-bold text-xl">F</span>
+                </div>
+                <h1 class="text-2xl font-bold">FiaoPro</h1>
+            </div>
+            <button id="menu-btn" class="lg:hidden">
+                <i class="fas fa-bars text-xl"></i>
             </button>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">FiaoPro – Acceso Administrador</h2>
-            <input type="text" id="adminUser" placeholder="Usuario" class="w-full p-3 border rounded-lg mb-3">
-            <input type="password" id="adminPass" placeholder="Contraseña" class="w-full p-3 border rounded-lg mb-3">
-            <p id="adminError" class="text-red-500 text-sm mb-3"></p>
-            <button onclick="loginAdmin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg font-medium">Iniciar Sesión</button>
         </div>
+    </header>
 
-        <!-- PANEL ADMIN -->
-        <div id="adminPanel" class="hidden bg-white rounded-xl shadow-md p-6 fade-in">
+    <!-- NAV MOBILE -->
+    <nav id="mobile-menu" class="hidden bg-white shadow-md lg:hidden">
+        <ul class="flex flex-col">
+            <li><a href="#" class="block px-4 py-3 text-gray-700 hover:bg-gray-100" data-section="dashboard">Dashboard</a></li>
+            <li><a href="#" class="block px-4 py-3 text-gray-700 hover:bg-gray-100" data-section="clientes">Clientes</a></li>
+            <li><a href="#" class="block px-4 py-3 text-gray-700 hover:bg-gray-100" data-section="creditos">Créditos</a></li>
+            <li><a href="#" class="block px-4 py-3 text-gray-700 hover:bg-gray-100" data-section="pagos">Pagos</a></li>
+        </ul>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="container mx-auto px-4 py-8">
+
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboard" class="section">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-md card-hover">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">Total Clientes</h3>
+                        <i class="fas fa-users text-blue-600"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900" id="total-clientes">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md card-hover">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">Créditos Activos</h3>
+                        <i class="fas fa-credit-card text-green-600"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900" id="creditos-activos">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md card-hover">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">Total Fiado</h3>
+                        <i class="fas fa-dollar-sign text-yellow-600"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900" id="total-fiado">$0</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md card-hover">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">Pagos Hoy</h3>
+                        <i class="fas fa-money-bill-wave text-purple-600"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900" id="pagos-hoy">$0</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-xl font-bold mb-4 text-gray-800">Actividad Reciente</h2>
+                <div id="actividad-reciente" class="space-y-3">
+                    <p class="text-gray-500 text-center py-8">Cargando actividad...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CLIENTES SECTION -->
+        <section id="clientes" class="section hidden">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">FiaoPro – Panel Administrador</h2>
-                <button onclick="logout()" class="text-red-500 hover:text-red-700">
-                    <i class="fas fa-sign-out-alt"></i> Salir
+                <h2 class="text-2xl font-bold text-gray-800">Clientes</h2>
+                <button id="nuevo-cliente-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-plus mr-2"></i>Nuevo Cliente
                 </button>
             </div>
 
-            <div class="bg-indigo-50 p-5 rounded-lg mb-6">
-                <h3 class="font-semibold text-indigo-800 mb-3">Agregar Nueva Tienda</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <input type="text" id="tiendaNombre" placeholder="Nombre de la tienda" class="p-3 border rounded-lg">
-                    <input type="text" id="tiendaLugar" placeholder="Ubicación" class="p-3 border rounded-lg">
-                    <input type="text" id="tiendaDueno" placeholder="Nombre del dueño" class="p-3 border rounded-lg">
-                    <input type="text" id="tiendaTelefono" placeholder="Teléfono del dueño" class="p-3 border rounded-lg">
-                    <input type="text" id="tiendaUser" placeholder="Usuario del dueño" class="p-3 border rounded-lg">
-                    <input type="password" id="tiendaPass" placeholder="Contraseña del dueño" class="p-3 border rounded-lg">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="p-4 border-b">
+                    <input type="text" id="buscar-cliente" placeholder="Buscar cliente..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                <button onclick="agregarTienda()" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg font-medium">
-                    <i class="fas fa-plus mr-2"></i>Agregar Tienda
-                </button>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Saldo</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-clientes" class="bg-white divide-y divide-gray-200">
+                            <tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">Cargando clientes...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+        </section>
 
-            <h3 class="font-semibold text-gray-800 mb-3">Tiendas Registradas</h3>
-            <div id="tiendasList" class="space-y-3"></div>
-        </div>
-
-        <!-- LOGIN DUEÑO -->
-        <div id="ownerLogin" class="hidden bg-white rounded-xl shadow-md p-8 fade-in">
-            <button onclick="backToMain()" class="mb-4 text-gray-600 hover:text-gray-800">
-                <i class="fas fa-arrow-left"></i> Volver
-            </button>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">FiaoPro – Acceso Dueño</h2>
-            <input type="text" id="ownerUser" placeholder="Usuario" class="w-full p-3 border rounded-lg mb-3">
-            <input type="password" id="ownerPass" placeholder="Contraseña" class="w-full p-3 border rounded-lg mb-3">
-            <p id="ownerError" class="text-red-500 text-sm mb-3"></p>
-            <button onclick="loginOwner()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg font-medium">Iniciar Sesión</button>
-        </div>
-
-        <!-- PANEL DUEÑO -->
-        <div id="ownerPanel" class="hidden bg-white rounded-xl shadow-md p-6 fade-in">
+        <!-- CRÉDITOS SECTION -->
+        <section id="creditos" class="section hidden">
             <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">FiaoPro – Tienda: <span id="tiendaNameDisplay" class="text-indigo-600"></span></h2>
-                    <p id="tiendaLocation" class="text-sm text-gray-600"></p>
-                </div>
-                <button onclick="logout()" class="text-red-500 hover:text-red-700">
-                    <i class="fas fa-sign-out-alt"></i> Salir
+                <h2 class="text-2xl font-bold text-gray-800">Créditos</h2>
+                <button id="nuevo-credito-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                    <i class="fas fa-plus mr-2"></i>Nuevo Crédito
                 </button>
             </div>
 
-            <div class="mb-6">
-                <input type="text" id="buscador" placeholder="Buscar por nombre o cédula..." class="w-full p-3 border rounded-lg" onkeyup="buscarCliente()">
-                <div id="resultadosBuscador" class="mt-4 space-y-3"></div>
-            </div>
-
-            <div class="bg-indigo-50 p-5 rounded-lg">
-                <h3 class="font-semibold text-indigo-800 mb-3">Agregar Cliente</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <input type="text" id="clienteNombre" placeholder="Nombre completo" class="p-3 border rounded-lg">
-                    <input type="text" id="clienteCedula" placeholder="Cédula" class="p-3 border rounded-lg">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="p-4 border-b">
+                    <input type="text" id="buscar-credito" placeholder="Buscar crédito..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                 </div>
-                <button onclick="agregarCliente()" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg font-medium">
-                    <i class="fas fa-plus mr-2"></i>Agregar Cliente
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-creditos" class="bg-white divide-y divide-gray-200">
+                            <tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">Cargando créditos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGOS SECTION -->
+        <section id="pagos" class="section hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Pagos</h2>
+                <button id="nuevo-pago-btn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                    <i class="fas fa-plus mr-2"></i>Registrar Pago
                 </button>
             </div>
+
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="p-4 border-b">
+                    <input type="text" id="buscar-pago" placeholder="Buscar pago..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Crédito</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-pagos" class="bg-white divide-y divide-gray-200">
+                            <tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">Cargando pagos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODALES -->
+    <div id="modal-cliente" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4" id="modal-cliente-titulo">Nuevo Cliente</h3>
+            <form id="form-cliente">
+                <input type="hidden" id="cliente-id">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
+                    <input type="text" id="cliente-nombre" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                    <input type="tel" id="cliente-telefono" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                    <input type="text" id="cliente-direccion" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelar-cliente" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">Guardar</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- JAVASCRIPT AL FINAL -->
+    <div id="modal-credito" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4">Nuevo Crédito</h3>
+            <form id="form-credito">
+                <input type="hidden" id="credito-id">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+                    <select id="credito-cliente" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Monto</label>
+                    <input type="number" step="0.01,00" id="credito-monto" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                    <textarea id="credito-descripcion" rows="3" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelar-credito" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">Crear Crédito</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-pago" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4">Registrar Pago</h3>
+            <form id="form-pago">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Crédito</label>
+                    <select id="pago-credito" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Monto</label>
+                    <input type="number" step="0.01,00" id="pago-monto" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelar-pago" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-700">Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
     <script>
+        // Configuración de Airtable
+        const AIRTABLE_API_KEY = 'patYOURKEYHERE';
+        const AIRTABLE_BASE_ID = 'appYOURBASEHERE';
         const API_URL = '/api/airtable';
-        const adminCredenciales = { user: "Ortdavid10", pass: "operador2864" };
-        let tiendas = [], clientes = [], currentOwner = null;
 
-        function show(panelId) {
-            ['loginScreen', 'adminLogin', 'adminPanel', 'ownerLogin', 'ownerPanel'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.add('hidden');
+        // Elementos del DOM
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('[data-section]');
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        // Mostrar sección
+        function showSection(sectionId) {
+            sections.forEach(s => s.classList.add('hidden'));
+            document.getElementById(sectionId).classList.remove('hidden');
+            if (window.innerWidth < 1024) mobileMenu.classList.add('hidden');
+        }
+
+        // Navegación
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = link.getAttribute('data-section');
+                showSection(section);
+                history.pushState({section}, '', `#${section}`);
             });
-            const panel = document.getElementById(panelId);
-            if (panel) panel.classList.remove('hidden');
+        });
+
+        // Menú móvil
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Cargar datos iniciales
+        window.addEventListener('load', () => {
+            const hash = window.location.hash.slice(1) || 'dashboard';
+            showSection(hash);
+            cargarDashboard();
+        });
+
+        // Funciones de carga (placeholders - se conectarán con Airtable)
+        async function cargarDashboard() {
+            // Simulación
+            document.getElementById('total-clientes').textContent = '24';
+            document.getElementById('creditos-activos').textContent = '18';
+            document.getElementById('total-fiado').textContent = '$2,450.00';
+            document.getElementById('pagos-hoy').textContent = '$380.00';
         }
 
-        function showAdminLogin() { show('adminLogin'); }
-        function showOwnerLogin() { show('ownerLogin'); }
-        function backToMain() { show('loginScreen'); }
-        function logout() {
-            currentOwner = null;
-            document.querySelectorAll('input').forEach(input => input.value = '');
-            show('loginScreen');
-        }
-
-        async function apiCall(table, action, data = {}, recordId = null) {
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ table, action, data, recordId })
-                });
-                const json = await res.json();
-                if (!res.ok || json.error) {
-                    alert('ERROR DE AIRTABLE:\n' + JSON.stringify(json, null, 2));
-                    return { error: true };
-                }
-                return json;
-            } catch (e) {
-                alert('ERROR DE CONEXIÓN:\n' + e.message);
-                return { error: true };
-            }
-        }
-
-        function diasHasta(fechaISO) {
-            const hoy = new Date();
-            const exp = new Date(fechaISO);
-            const diff = exp - hoy;
-            return Math.ceil(diff / (1000 * 60 * 60 * 24));
-        }
-
-        async function loginAdmin() {
-            const user = document.getElementById('adminUser').value.trim();
-            const pass = document.getElementById('adminPass').value;
-            if (user === adminCredenciales.user && pass === adminCredenciales.pass) {
-                document.getElementById('adminError').innerText = '';
-                show('adminPanel');
-                await loadTiendas();
-            } else {
-                document.getElementById('adminError').innerText = 'Usuario o contraseña incorrectos';
-            }
-        }
-
-        async function loadTiendas() {
-            const data = await apiCall('Tiendas', 'list');
-            tiendas = Array.isArray(data) ? data : [];
-            const list = document.getElementById('tiendasList');
-            list.innerHTML = tiendas.length === 0 ? '<p class="text-gray-500 text-center">No hay tiendas registradas</p>' : '';
-
-            for (let i = 0; i < tiendas.length; i++) {
-                const t = tiendas[i];
-                let fechaSus = t.FechaSuscripcion || (async () => {
-                    const hoy = new Date();
-                    const exp = new Date(hoy); exp.setDate(hoy.getDate() + 30);
-                    const nueva = exp.toISOString().split('T')[0];
-                    await apiCall('Tiendas', 'update', { FechaSuscripcion: nueva }, t.id);
-                    return nueva;
-                })();
-                if (typeof fechaSus.then === 'function') fechaSus = await fechaSus;
-                tiendas[i].FechaSuscripcion = fechaSus;
-
-                const dias = diasHasta(fechaSus);
-                const [yyyy, mm, dd] = fechaSus.split('-');
-                const textoFecha = `${dd}/${mm}/${yyyy}`;
-                let colorClass = dias > 2 ? 'text-green-600' : dias >= 0 ? 'text-yellow-600' : 'text-red-600';
-
-                const div = document.createElement('div');
-                div.className = 'bg-white p-5 rounded-lg shadow-sm border card-hover';
-                div.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-lg">${t.Nombre}</h4>
-                            <p class="text-sm text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>${t.Lugar}</p>
-                            ${t.Dueño ? `<p class="text-sm text-indigo-600 font-medium"><i class="fas fa-user mr-1"></i>${t.Dueño}</p>` : ''}
-                            ${t.Teléfono ? `<p class="text-sm text-gray-700"><i class="fas fa-phone mr-1"></i>${t.Teléfono}</p>` : ''}
-                            <p class="text-sm font-medium ${colorClass} mt-1">
-                                <i class="fas fa-calendar-alt mr-1"></i>Suscripción: ${textoFecha}
-                            </p>
-                        </div>
-                        <div class="flex gap-2 mt-1">
-                            <button onclick="renovarSuscripcion(${i})" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-2 py-1 rounded">
-                                <i class="fas fa-sync-alt mr-1"></i>Renovar
-                            </button>
-                            <button onclick="eliminarTienda(${i})" class="text-red-500 hover:text-red-700">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                list.appendChild(div);
-            }
-        }
-
-        async function agregarTienda() {
-            const inputs = ['tiendaNombre', 'tiendaLugar', 'tiendaDueno', 'tiendaTelefono', 'tiendaUser', 'tiendaPass'];
-            const values = {};
-            for (const id of inputs) {
-                values[id] = document.getElementById(id).value.trim();
-                if (!values[id]) return alert('Complete todos los campos');
-            }
-
-            const hoy = new Date();
-            const exp = new Date(hoy); exp.setDate(hoy.getDate() + 30);
-            const fechaSus = exp.toISOString().split('T')[0];
-
-            const res = await apiCall('Tiendas', 'create', {
-                Nombre: values.tiendaNombre,
-                Lugar: values.tiendaLugar,
-                Dueño: values.tiendaDueno,
-                Teléfono: values.tiendaTelefono,
-                User: values.tiendaUser,
-                Pass: values.tiendaPass,
-                FechaSuscripcion: fechaSus
-            });
-            if (res.error) return;
-
-            tiendas.push(res);
-            loadTiendas();
-            inputs.forEach(id => document.getElementById(id).value = '');
-            alert('Tienda agregada a FiaoPro');
-        }
-
-        async function renovarSuscripcion(i) {
-            if (!confirm('¿Renovar 30 días?')) return;
-            const hoy = new Date();
-            const nueva = new Date(hoy); nueva.setDate(hoy.getDate() + 30);
-            const fechaNueva = nueva.toISOString().split('T')[0];
-            await apiCall('Tiendas', 'update', { FechaSuscripcion: fechaNueva }, tiendas[i].id);
-            tiendas[i].FechaSuscripcion = fechaNueva;
-            loadTiendas();
-            alert('Suscripción renovada');
-        }
-
-        async function eliminarTienda(i) {
-            if (confirm('¿Eliminar tienda?')) {
-                await apiCall('Tiendas', 'delete', {}, tiendas[i].id);
-                tiendas.splice(i, 1);
-                loadTiendas();
-            }
-        }
-
-        async function loginOwner() {
-            const user = document.getElementById('ownerUser').value.trim();
-            const pass = document.getElementById('ownerPass').value.trim();
-            const tienda = tiendas.find(t => t.User === user && t.Pass === pass);
-            if (!tienda) return document.getElementById('ownerError').innerText = 'Datos incorrectos';
-            if (tienda.FechaSuscripcion && diasHasta(tienda.FechaSuscripcion) < 0) {
-                return document.getElementById('ownerError').innerText = 'Suscripción expirada';
-            }
-            currentOwner = { id: tienda.id, Nombre: tienda.Nombre, Lugar: tienda.Lugar };
-            show('ownerPanel');
-            document.getElementById('tiendaNameDisplay').innerText = tienda.Nombre;
-            document.getElementById('tiendaLocation').innerText = tienda.Lugar;
-            document.getElementById('ownerError').innerText = '';
-            await loadClientes();
-        }
-
-        async function loadClientes() {
-            const data = await apiCall('Clientes',(ver 'list');
-            clientes = Array.isArray(data) ? data.map(c => ({ ...c, deudas: c.Deudas ? JSON.parse(c.Deudas) : [] })) : [];
-            document.getElementById('resultadosBuscador').innerHTML = '';
-        }
-
-        async function agregarCliente() {
-            const nombre = document.getElementById('clienteNombre').value.trim();
-            const cedula = document.getElementById('clienteCedula').value.trim();
-            if (!nombre || !cedula) return alert('Faltan datos');
-            if (clientes.some(c => c.Cedula === cedula)) return alert('Cliente ya existe');
-            const res = await apiCall('Clientes', 'create', {
-                Nombre: nombre, Cedula: cedula, Tienda: [currentOwner.id],
-                "Fecha de registro": new Date().toISOString().split('T')[0], Deudas: "[]"
-            });
-            if (res.error) return;
-            clientes.push({ ...res, deudas: [] });
-            document.getElementById('clienteNombre').value = '';
-            document.getElementById('clienteCedula').value = '';
-            alert('Cliente agregado');
-        }
-
-        function buscarCliente() {
-            const query = document.getElementById('buscador').value.trim().toLowerCase();
-            const cont = document.getElementById('resultadosBuscador');
-            cont.innerHTML = '';
-            if (!query) return;
-
-            const resultados = clientes.filter(c => c.Nombre.toLowerCase().includes(query) || c.Cedula.includes(query));
-            if (resultados.length === 0) {
-                cont.innerHTML = '<p class="text-gray-500 text-center">No encontrado</p>';
-                return;
-            }
-
-            resultados.forEach(c => {
-                const debeAqui = c.deudas.some(d => d.tienda === currentOwner.Nombre);
-                const deudasTexto = c.deudas.map(d => {
-                    const [y, m, dd] = d.fecha.split('-');
-                    return `${d.tienda} (${dd}/${m}/${y})`;
-                }).join(', ');
-                const estado = deudasTexto ? `<span class="text-red-600 text-sm">• Debe en: ${deudasTexto}</span>` : '<span class="text-green-600 text-sm">• Paz y salvo</span>';
-
-                const div = document.createElement('div');
-                div.className = 'bg-white p-4 rounded-lg shadow-sm border';
-                div.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h4 class="font-semibold">${c.Nombre}</h4>
-                            <p class="text-sm text-gray-500"><i class="fas fa-id-card mr-1"></i>${c.Cedula}</p>
-                            ${estado}
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="agregarDeuda('${c.Cedula}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Debe</button>
-                            <button onclick="pagarDeuda('${c.Cedula}')" class="${debeAqui ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400'} text-white px-3 py-1 rounded text-sm" ${!debeAqui ? 'disabled' : ''}>
-                                ${debeAqui ? 'Pagado' : 'No debe'}
-                            </button>
-                        </div>
-                    </div>
-                `;
-                cont.appendChild(div);
-            });
-        }
-
-        async function agregarDeuda(cedula) {
-            const cliente = clientes.find(c => c.Cedula === cedula);
-            if (cliente.deudas.some(d => d.tienda === currentOwner.Nombre)) return alert('Ya debe aquí');
-            cliente.deudas.push({ fecha: new Date().toISOString().split('T')[0], tienda: currentOwner.Nombre });
-            await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
-            buscarCliente();
-            alert('Deuda marcada');
-        }
-
-        async function pagarDeuda(cedula) {
-            const cliente = clientes.find(c => c.Cedula === cedula);
-            if (!cliente.deudas.some(d => d.tienda === currentOwner.Nombre)) return;
-            if (confirm('¿Marcar como pagado?')) {
-                cliente.deudas = cliente.deudas.filter(d => d.tienda !== currentOwner.Nombre);
-                await apiCall('Clientes', 'update', { Deudas: JSON.stringify(cliente.deudas) }, cliente.id);
-                buscarCliente();
-                alert('Pago registrado');
-            }
-        }
-
+        // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
-            show('loginScreen');
+            cargarDashboard();
         });
     </script>
 </body>
