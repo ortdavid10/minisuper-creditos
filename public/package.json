@@ -5,5 +5,7 @@
   "scripts": {
     "build": "echo 'Build completo'"
   },
-  "dependencies": {}
+  "dependencies": {
+    "airtable": "^0.11.6"
+  }
 }
