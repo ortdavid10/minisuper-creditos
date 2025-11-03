@@ -1,4 +1,4 @@
-// public/api/airtable.js
+// api/airtable.js
 export const config = { api: { bodyParser: true } };
 
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
