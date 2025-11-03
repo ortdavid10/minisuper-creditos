@@ -6,7 +6,7 @@ const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 
 export default async function handler(req, res) {
   if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
-    return res.status(500).json({ error: 'Faltan credenciales de Airtable' });
+    return res.status(500).json({ error: 'Faltan credenciales de Airtable en Vercel' });
   }
 
   const { table, action, data, recordId } = req.body;
