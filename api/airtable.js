@@ -10,42 +10,20 @@ export default async function handler(req, res) {
   }
 
   if (!process.env.AIRTABLE_API_KEY || !process.env.AIRTABLE_BASE_ID) {
-    console.error('FALTAN VARIABLES DE ENTORNO:', {
-      apiKey: !!process.env.AIRTABLE_API_KEY,
-      baseId: !!process.env.AIRTABLE_BASE_ID
-    });
-    return res.status(500).json({ 
-      error: 'Configuración del servidor incompleta', 
-      details: 'Faltan AIRTABLE_API_KEY o AIRTABLE_BASE_ID' 
-    });
-  }
-
-  let base;
-  try {
-    base = new Airtable({ 
-      apiKey: process.env.AIRTABLE_API_KEY?,
-      endpointUrl: 'https://api.airtable.com'
-    }).base(process.env.AIRTABLE_BASE_ID);
-  } catch (error) {
-    console.error('ERROR INICIALIZANDO AIRTABLE:', {
-      message: error.message,
-      stack: error.stack
-    });
-    return res.status(500).json({ 
-      error: 'Error inicializando Airtable', 
-      details: error.message 
-    });
-  }
-
-  const { table, action, data, recordId } = req.body;
-
-  if (!table || !action) {
-    return res.status(400).json({ error: 'Faltan table o action' });
+    console.error('FALTAN VARIABLES DE ENTORNO');
+    return res.status(500).json({ error: 'Faltan variables de entorno' });
   }
 
   try {
-    console.log('Procesando:', { table, action, data, recordId });
+    const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(process.env.AIRTABLE_BASE_ID);
+    const { table, action, data, recordId } = req.body;
+
+    if (!table || !action) {
+      return res.status(400).json({ error: 'Faltan table o action' });
+    }
+
     const airtableTable = base(table);
+
     switch (action) {
       case 'list':
         const records = await airtableTable.select({ maxRecords: 100 }).all();
@@ -69,16 +47,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Acción no válida' });
     }
   } catch (error) {
-    console.error('ERROR AIRTABLE:', {
-      message: error.message,
-      stack: error.stack,
-      code: error.code,
-      requestBody: req.body
-    });
-    return res.status(500).json({ 
-      error: 'Error en Airtable', 
-      details: error.message,
-      code: error.code
-    });
+    console.error('ERROR AIRTABLE:', error.message);
+    return res.status(500).json({ error: 'Error en Airtable', details: error.message });
   }
 }
