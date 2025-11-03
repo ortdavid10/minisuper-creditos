@@ -271,7 +271,6 @@
             alert('Tienda agregada');
         }
 
-        // FUNCIÓN RENOVAR CORREGIDA
         async function renovarSuscripcion(i) {
             if (!confirm('¿Renovar 30 días?')) return;
             
@@ -286,7 +285,7 @@
                 return;
             }
 
-            await loadTiendas(); // RECARGA DESDE AIRTABLE
+            await loadTiendas();
             alert('¡Suscripción renovada! Nueva fecha: ' + fechaNueva.split('-').reverse().join('/'));
         }
 
@@ -322,7 +321,7 @@
 
         async function agregarCliente() {
             const nombre = document.getElementById('clienteNombre').value.trim();
-            const cedula = document.getElementById('clienteCesula').value.trim();
+            const cedula = document.getElementById('clienteCedula').value.trim();
             if (!nombre || !cedula) return alert('Faltan datos');
             if (clientes.some(c => c.fields?.Cedula === cedula)) return alert('Cliente ya existe');
             const res = await apiCall('Clientes', 'create', {
@@ -414,6 +413,23 @@
         document.addEventListener('DOMContentLoaded', () => {
             show('loginScreen');
         });
+
+        // CIERRE AUTOMÁTICO CADA 60 SEGUNDOS SI LA SUSCRIPCIÓN EXPIRA
+        setInterval(async () => {
+            if (!currentOwner) return;
+
+            const tienda = tiendas.find(t => t.id === currentOwner.id);
+            if (!tienda) return;
+
+            const fecha = tienda.fields?.FechaSuscripcion || tienda.FechaSuscripcion;
+            if (!fecha) return;
+
+            if (diasHasta(fecha) < 0) {
+                alert('¡Tu suscripción ha expirado! Serás desconectado.');
+                logout();
+                document.getElementById('ownerError').innerText = 'Suscripción expirada';
+            }
+        }, 60000);
     </script>
 </body>
 </html>
