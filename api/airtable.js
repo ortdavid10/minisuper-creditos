@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Método no permitido, usa POST' });
   }
 
-  if (!process.env.AIRTABLE_API_KEY || !process.env.AIRTABLE_BASE_ID) {
+  if (!process.env.AIRTABLE_API_KEY migration to Vercel Serverless Functions || !process.env.AIRTABLE_BASE_ID) {
     console.error('FALTAN VARIABLES DE ENTORNO:', {
       hasApiKey: !!process.env.AIRTABLE_API_KEY,
       hasBaseId: !!process.env.AIRTABLE_BASE_ID,
