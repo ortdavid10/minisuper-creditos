@@ -271,14 +271,23 @@
             alert('Tienda agregada');
         }
 
+        // FUNCIÓN RENOVAR CORREGIDA
         async function renovarSuscripcion(i) {
             if (!confirm('¿Renovar 30 días?')) return;
+            
             const hoy = new Date();
-            const nueva = new Date(hoy); nueva.setDate(hoy.getDate() + 30);
+            const nueva = new Date(hoy);
+            nueva.setDate(hoy.getDate() + 30);
             const fechaNueva = nueva.toISOString().split('T')[0];
-            await apiCall('Tiendas', 'update', { FechaSuscripcion: fechaNueva }, tiendas[i].id);
-            await loadTiendas();
-            alert('Suscripción renovada');
+
+            const res = await apiCall('Tiendas', 'update', { FechaSuscripcion: fechaNueva }, tiendas[i].id);
+            if (res.error) {
+                alert('Error al renovar');
+                return;
+            }
+
+            await loadTiendas(); // RECARGA DESDE AIRTABLE
+            alert('¡Suscripción renovada! Nueva fecha: ' + fechaNueva.split('-').reverse().join('/'));
         }
 
         async function eliminarTienda(i) {
@@ -313,7 +322,7 @@
 
         async function agregarCliente() {
             const nombre = document.getElementById('clienteNombre').value.trim();
-            const cedula = document.getElementById('clienteCedula').value.trim();
+            const cedula = document.getElementById('clienteCesula').value.trim();
             if (!nombre || !cedula) return alert('Faltan datos');
             if (clientes.some(c => c.fields?.Cedula === cedula)) return alert('Cliente ya existe');
             const res = await apiCall('Clientes', 'create', {
