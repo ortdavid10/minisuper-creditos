@@ -22,6 +22,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Faltan table o action' });
     }
 
+    console.log('Solicitud recibida:', { table, action, data, recordId });
+
     const airtableTable = base(table);
 
     switch (action) {
