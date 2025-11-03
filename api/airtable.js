@@ -1,14 +1,5 @@
 const Airtable = require('airtable');
 
-if (!process.env.AIRTABLE_API_KEY || !process.env.AIRTABLE_BASE_ID) {
-  console.error('FALTAN VARIABLES DE ENTORNO: AIRTABLE_API_KEY o AIRTABLE_BASE_ID');
-}
-
-const base = new Airtable({ 
-  apiKey: process.env.AIRTABLE_API_KEY,
-  endpointUrl: 'https://api.airtable.com'
-}).base(process.env.AIRTABLE_BASE_ID);
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST');
@@ -18,6 +9,34 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Método no permitido' });
   }
 
+  if (!process.env.AIRTABLE_API_KEY || !process.env.AIRTABLE_BASE_ID) {
+    console.error('FALTAN VARIABLES DE ENTORNO:', {
+      apiKey: !!process.env.AIRTABLE_API_KEY,
+      baseId: !!process.env.AIRTABLE_BASE_ID
+    });
+    return res.status(500).json({ 
+      error: 'Configuración del servidor incompleta', 
+      details: 'Faltan AIRTABLE_API_KEY o AIRTABLE_BASE_ID' 
+    });
+  }
+
+  let base;
+  try {
+    base = new Airtable({ 
+      apiKey: process.env.AIRTABLE_API_KEY?,
+      endpointUrl: 'https://api.airtable.com'
+    }).base(process.env.AIRTABLE_BASE_ID);
+  } catch (error) {
+    console.error('ERROR INICIALIZANDO AIRTABLE:', {
+      message: error.message,
+      stack: error.stack
+    });
+    return res.status(500).json({ 
+      error: 'Error inicializando Airtable', 
+      details: error.message 
+    });
+  }
+
   const { table, action, data, recordId } = req.body;
 
   if (!table || !action) {
@@ -25,7 +44,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('Procesando acción:', action, 'en tabla:', table); // Log para depurar
+    console.log('Procesando:', { table, action, data, recordId });
     const airtableTable = base(table);
     switch (action) {
       case 'list':
@@ -35,7 +54,7 @@ export default async function handler(req, res) {
         if (!data || Object.keys(data).length === 0) {
           return res.status(400).json({ error: 'Faltan datos para crear' });
         }
-        const created = await airtableTable.create([{ fields: data }]); // Nota: Usa array para create
+        const created = await airtableTable.create([{ fields: data }]);
         return res.status(200).json(created);
       case 'update':
         if (!recordId) return res.status(400).json({ error: 'Falta recordId' });
