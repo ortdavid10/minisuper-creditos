@@ -166,10 +166,10 @@
                     body: JSON.stringify({ table, action, data, recordId })
                 });
                 const json = await res.json();
-                if (!res.ok || json.error) return { error: json.error || 'Error desconocido' };
+                if (!res.ok || json.error) return { error: json.error || 'Error desconocido', details: json.details };
                 return json;
             } catch (e) {
-                return { error: e.message };
+                return { error: e.message, details: 'Error en la solicitud al servidor' };
             }
         }
 
@@ -255,7 +255,7 @@
             const exp = new Date(hoy); exp.setDate(hoy.getDate() + 30);
             const fechaSus = exp.toISOString().split('T')[0];
 
-            const res = await apiCall('Tiendas', 'create', {
+            const dataToSend = {
                 Nombre: values.tiendaNombre,
                 Lugar: values.tiendaLugar,
                 Dueño: values.tiendaDueno,
@@ -263,12 +263,19 @@
                 User: values.tiendaUser,
                 Pass: values.tiendaPass,
                 FechaSuscripcion: fechaSus
-            });
-            if (res.error) return alert('Error al agregar tienda');
+            };
+
+            console.log('Enviando datos a Airtable:', dataToSend); // Log para depurar en el navegador
+
+            const res = await apiCall('Tiendas', 'create', dataToSend);
+            if (res.error) {
+                console.error('Error al agregar tienda:', res);
+                return alert(`Error al agregar tienda: ${res.error}${res.details ? ' - ' + res.details : ''}`);
+            }
 
             await loadTiendas();
             inputs.forEach(id => document.getElementById(id).value = '');
-            alert('Tienda agregada');
+            alert('Tienda agregada exitosamente!');
         }
 
         async function renovarSuscripcion(i) {
