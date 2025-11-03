@@ -1,0 +1,10 @@
+{
+  "builds": [
+    { "src": "public/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/manifest.json", "dest": "/public/manifest.json" },
+    { "src": "/icon-192.png", "dest": "/public/icon-192.png" },
+    { "src": "/icon-180.png", "dest": "/public/icon-180.png" }
+  ]
+}
